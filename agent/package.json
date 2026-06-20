@@ -1,6 +1,6 @@
 {
   "name": "autodev-agent",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Auto-pilot your git. Auto-commits and pushes your code + analyzes your GitHub profile.",
   "main": "dist/index.js",
   "bin": {
