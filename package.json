@@ -1,0 +1,14 @@
+{
+  "name": "autodev-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "install:agent": "cd agent && npm install",
+    "install:platform": "cd platform && npm install",
+    "install:all": "npm run install:agent & npm run install:platform",
+    "dev:agent": "cd agent && npm run dev",
+    "dev:platform": "cd platform && npm run dev",
+    "build:agent": "cd agent && npm run build",
+    "build:platform": "cd platform && npm run build"
+  }
+}
