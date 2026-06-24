@@ -295,6 +295,48 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Pricing */}
+      <section className="py-24 border-t border-white/5">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <span className="text-xs font-semibold text-cyan-400 uppercase tracking-[0.2em]">Pricing</span>
+            <h2 className="text-4xl font-bold mt-3 mb-4">Simple. One Price.</h2>
+            <p className="text-gray-400 max-w-xl mx-auto">All tools are free. Pay only when you need a recruiter-ready report.</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            <div className="glass rounded-2xl p-8 text-center">
+              <div className="text-3xl font-bold text-white mb-2">Free</div>
+              <div className="text-xs text-gray-500 mb-6">Everything you need to start</div>
+              <ul className="text-left space-y-3 text-sm text-gray-400 mb-8">
+                <li className="flex items-center gap-2"><span className="text-green-400">✓</span> GitHub Profile Score</li>
+                <li className="flex items-center gap-2"><span className="text-green-400">✓</span> README Generator (3 styles)</li>
+                <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Leaderboard Rankings</li>
+                <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Shareable Badge</li>
+                <li className="flex items-center gap-2"><span className="text-green-400">✓</span> npx autodev-agent</li>
+              </ul>
+              <a href="/dashboard" className="block w-full glass rounded-xl px-6 py-3 text-sm text-cyan-400 hover:bg-white/[0.06] transition font-medium">
+                Get Started Free
+              </a>
+            </div>
+            <div className="glass rounded-2xl p-8 text-center border border-cyan-400/20 glow">
+              <div className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-2">Premium</div>
+              <div className="text-3xl font-bold text-white mb-1">₹99</div>
+              <div className="text-xs text-gray-500 mb-6">one-time · no subscription</div>
+              <ul className="text-left space-y-3 text-sm text-gray-400 mb-8">
+                <li className="flex items-center gap-2"><span className="text-cyan-400">✓</span> Recruiter-ready PDF Report</li>
+                <li className="flex items-center gap-2"><span className="text-cyan-400">✓</span> Detailed Profile Audit</li>
+                <li className="flex items-center gap-2"><span className="text-cyan-400">✓</span> Improvement Roadmap</li>
+                <li className="flex items-center gap-2"><span className="text-cyan-400">✓</span> Full Stats & Charts</li>
+                <li className="flex items-center gap-2"><span className="text-cyan-400">✓</span> All Free Features</li>
+              </ul>
+              <a href="/dashboard" className="block w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition text-sm">
+                Get Premium Report
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-24 border-t border-white/5 relative">
         <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/5 to-transparent" />
