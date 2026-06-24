@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import sharp from 'sharp';
 import { rateLimit } from '../../lib/rate-limit';
+import { analyzeProfile } from '../../lib/analyze-profile';
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,10 +17,7 @@ export default async function handler(
   }
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://autodev-kappa.vercel.app');
-    const dataRes = await fetch(
-      `${baseUrl}/api/analyze?username=${encodeURIComponent(username)}`
-    );
+    const analysis = await analyzeProfile(username);
 
     let avatar = '';
     let repos = 0;
@@ -27,13 +25,12 @@ export default async function handler(
     let forks = 0;
     let score = 0;
 
-    if (dataRes.ok) {
-      const d = await dataRes.json();
-      avatar = d.avatar || '';
-      repos = d.totalRepos || 0;
-      stars = d.totalStars || 0;
-      forks = d.totalForks || 0;
-      score = d.overallScore || 0;
+    if (analysis) {
+      avatar = analysis.avatar || '';
+      repos = analysis.totalRepos || 0;
+      stars = analysis.totalStars || 0;
+      forks = analysis.totalForks || 0;
+      score = analysis.overallScore || 0;
     }
 
     const barColor = score >= 70 ? '#4caf50' : score >= 40 ? '#ff9800' : '#f44336';
@@ -54,35 +51,28 @@ export default async function handler(
         </linearGradient>
       </defs>
 
-      <!-- Background -->
       <rect width="1200" height="630" fill="url(#bg)"/>
       <circle cx="1000" cy="100" r="300" fill="url(#glow1)"/>
       <circle cx="200" cy="500" r="250" fill="url(#glow2)"/>
 
-      <!-- Top Bar -->
       <rect x="60" y="50" width="36" height="36" rx="8" fill="url(#glow1)"/>
       <text x="78" y="75" fill="url(#glow1)" font-size="18" font-weight="900" text-anchor="middle" font-family="sans-serif">A</text>
       <text x="110" y="75" fill="#06b6d4" font-size="22" font-weight="700" font-family="sans-serif">{AutoDev}</text>
-      <text x="1140" y="75" fill="#6b7280" font-size="14" text-anchor="end" font-family="sans-serif">github.com/${username.replace(/&/g, '&amp;')}</text>
+      <text x="1140" y="75" fill="#6b7280" font-size="14" text-anchor="end" font-family="sans-serif">github.com/${String(username).replace(/&/g, '&amp;')}</text>
 
-      <!-- Avatar -->
       ${avatar ? `<image href="${avatar}" x="552" y="140" width="96" height="96" rx="48"/>` : `
       <circle cx="600" cy="188" r="48" fill="#1a1f2e"/>
-      <text x="600" y="203" fill="#06b6d4" font-size="36" font-weight="700" text-anchor="middle" font-family="sans-serif">${(username[0] || '?').toUpperCase()}</text>`}
+      <text x="600" y="203" fill="#06b6d4" font-size="36" font-weight="700" text-anchor="middle" font-family="sans-serif">${(String(username)[0] || '?').toUpperCase()}</text>`}
 
-      <!-- Username -->
-      <text x="600" y="275" fill="#fff" font-size="36" font-weight="700" text-anchor="middle" font-family="sans-serif">${username.replace(/&/g, '&amp;')}</text>
+      <text x="600" y="275" fill="#fff" font-size="36" font-weight="700" text-anchor="middle" font-family="sans-serif">${String(username).replace(/&/g, '&amp;')}</text>
 
-      <!-- Score Card -->
       <rect x="350" y="310" width="500" height="60" rx="12" fill="rgba(255,255,255,0.05)"/>
       <text x="450" y="348" fill="#9ca3af" font-size="16" text-anchor="middle" font-family="sans-serif">AutoDev Score</text>
       <text x="650" y="348" fill="${barColor}" font-size="42" font-weight="800" text-anchor="middle" font-family="sans-serif">${score}<tspan font-size="24" fill="#9ca3af">/100</tspan></text>
 
-      <!-- Progress Bar -->
       <rect x="400" y="390" width="400" height="8" rx="4" fill="rgba(255,255,255,0.1)"/>
-      <rect x="400" y="390" width="${score * 4}" height="8" rx="4" fill="${barColor}"/>
+      <rect x="400" y="390" width="${Math.min(score, 100) * 4}" height="8" rx="4" fill="${barColor}"/>
 
-      <!-- Stats -->
       <g transform="translate(360, 430)">
         <text x="0" y="30" fill="#fff" font-size="24" font-weight="700" text-anchor="middle" font-family="sans-serif">${repos}</text>
         <text x="0" y="46" fill="#6b7280" font-size="12" text-anchor="middle" font-family="sans-serif">Repos</text>
@@ -92,7 +82,6 @@ export default async function handler(
         <text x="320" y="46" fill="#6b7280" font-size="12" text-anchor="middle" font-family="sans-serif">Forks</text>
       </g>
 
-      <!-- Footer -->
       <line x1="60" y1="560" x2="1140" y2="560" stroke="rgba(255,255,255,0.05)"/>
       <text x="600" y="590" fill="#6b7280" font-size="13" text-anchor="middle" font-family="sans-serif">npx autodev-agent · ${process.env.NEXT_PUBLIC_BASE_URL?.replace('https://','') || 'autodev-kappa.vercel.app'}</text>
     </svg>`;
@@ -102,8 +91,7 @@ export default async function handler(
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate');
     res.status(200).send(png);
-  } catch (err) {
-    // Fallback minimal SVG
+  } catch {
     const fallback = `<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
       <rect width="1200" height="630" fill="#0a0f1e"/>
       <text x="600" y="300" fill="#06b6d4" font-size="64" font-weight="700" text-anchor="middle" font-family="sans-serif">{AutoDev}</text>
