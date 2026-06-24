@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import crypto from 'crypto';
 import { rateLimit } from '../../lib/rate-limit';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
@@ -165,12 +166,33 @@ function getScoreColor(score: number): string {
   return 'red';
 }
 
+async function verifyPayment(payment_id: string, order_id: string, signature: string): Promise<boolean> {
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  if (!keySecret || !keyId) return false;
+
+  const expected = crypto.createHmac('sha256', keySecret).update(`${order_id}|${payment_id}`).digest('hex');
+  if (expected !== signature) return false;
+
+  const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+  try {
+    const payRes = await fetch(`https://api.razorpay.com/v1/payments/${payment_id}`, {
+      headers: { Authorization: `Basic ${auth}` },
+    });
+    if (!payRes.ok) return false;
+    const payment = await payRes.json();
+    return payment.status === 'captured';
+  } catch {
+    return false;
+  }
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.headers['x-real-ip']?.toString() || 'unknown';
   const rl = rateLimit({ key: `generate-readme:${ip}`, maxRequests: 20, windowMs: 60000 });
   if (!rl.allowed) return res.status(429).json({ error: `Too many requests. Try again in ${Math.ceil(rl.resetIn / 1000)}s.` });
 
-  const { username, style = 'professional' } = req.method === 'POST' ? req.body : req.query;
+  const { username, style = 'professional', payment_id, order_id, razorpay_signature } = req.method === 'POST' ? req.body : req.query;
 
   if (!username || typeof username !== 'string') {
     return res.status(400).json({ error: 'Username is required' });
@@ -252,6 +274,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }, style as string);
 
     if (req.method === 'POST') {
+      if (!payment_id || !order_id || !razorpay_signature) {
+        return res.status(400).json({ error: 'Payment ID, Order ID, and signature are required' });
+      }
+
+      const isValid = await verifyPayment(payment_id as string, order_id as string, razorpay_signature as string);
+      if (!isValid) {
+        return res.status(402).json({ error: 'Payment verification failed. Please try again.' });
+      }
+
       res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="README-${username}.md"`);
       return res.status(200).send(readme);
