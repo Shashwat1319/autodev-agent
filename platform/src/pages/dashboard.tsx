@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const langColors: Record<string, string> = {
   JavaScript: '#f7df1e', TypeScript: '#3178c6', Python: '#3572A5',
@@ -10,12 +10,98 @@ const langColors: Record<string, string> = {
   Vue: '#4fc08d', Svelte: '#ff3e00', React: '#61dafb',
 };
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://autodev-kappa.vercel.app';
+
 export default function Dashboard() {
   const [username, setUsername] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [paying, setPaying] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+
+  const handlePayment = useCallback(async () => {
+    setPaying(true);
+    setPaymentError('');
+    try {
+      const orderRes = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
+      const order = await orderRes.json();
+
+      if (!orderRes.ok) {
+        if (order.error === 'PAYMENT_NOT_CONFIGURED') {
+          setPaymentError('PDF Report coming soon! Payment gateway is being set up.');
+          setPaying(false);
+          return;
+        }
+        throw new Error(order.error || 'Failed to create order');
+      }
+
+      if (!(window as any).Razorpay) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Failed to load Razorpay'));
+          document.body.appendChild(script);
+        });
+      }
+
+            const options = {
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'AutoDev',
+        description: 'GitHub Profile PDF Report',
+        order_id: order.id,
+        handler: async function (response: any) {
+          try {
+            const pdfRes = await fetch('/api/generate-pdf', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                username,
+                payment_id: response.razorpay_payment_id,
+                order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+            if (!pdfRes.ok) throw new Error('Failed to generate PDF');
+            const blob = await pdfRes.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${username}-autodev-report.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+          } catch (e: any) {
+            setPaymentError('Payment successful! PDF generation failed. Contact support.');
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setPaying(false);
+          },
+        },
+        prefill: { name: username },
+        theme: { color: '#06b6d4' },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (response: any) {
+        setPaymentError(`Payment failed: ${response.error.description}`);
+        setPaying(false);
+      });
+      rzp.open();
+    } catch (e: any) {
+      setPaymentError(e.message || 'Something went wrong');
+      setPaying(false);
+    }
+  }, [username]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -42,6 +128,7 @@ export default function Dashboard() {
       }
       const data = await res.json();
       setProfile(data);
+      setPaymentError('');
     } catch (err: any) {
       setError(err.message);
     }
@@ -54,6 +141,15 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Head>
         <title>{profile ? `${profile.username} — AutoDev Dashboard` : 'Dashboard — AutoDev'}</title>
+        <meta property="og:title" content={profile ? `${profile.username}'s AutoDev Score: ${profile.overallScore}/100` : 'AutoDev — GitHub Profile Analyzer'} />
+        <meta property="og:description" content={profile ? `Analyzed ${profile.totalRepos} repos · ${profile.totalStars} stars · ${profile.totalForks} forks` : 'Automate your git. Analyze your GitHub profile.'} />
+        <meta property="og:image" content={`${BASE_URL}/api/og?username=${profile?.username || username || ''}`} />
+        <meta property="og:url" content={`${BASE_URL}/dashboard?user=${profile?.username || username || ''}`} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={profile ? `${profile.username}'s AutoDev Score: ${profile.overallScore}/100` : 'AutoDev — GitHub Profile Analyzer'} />
+        <meta name="twitter:description" content={profile ? `Analyzed ${profile.totalRepos} repos · ${profile.totalStars} stars · ${profile.totalForks} forks` : 'Automate your git. Analyze your GitHub profile.'} />
+        <meta name="twitter:image" content={`${BASE_URL}/api/og?username=${profile?.username || username || ''}`} />
       </Head>
 
       {/* Nav */}
@@ -70,6 +166,8 @@ export default function Dashboard() {
           </a>
           <nav className="flex items-center gap-4">
             <a href="/" className="text-xs text-gray-400 hover:text-white transition">Home</a>
+            <a href="/leaderboard" className="text-xs text-gray-400 hover:text-white transition">Leaderboard</a>
+            <a href="/readme-generator" className="text-xs text-gray-400 hover:text-white transition">README</a>
             <a href="/dashboard" className="text-xs text-cyan-400 font-medium">Dashboard</a>
           </nav>
         </div>
@@ -81,7 +179,7 @@ export default function Dashboard() {
           <div className="flex-1 glass rounded-xl overflow-hidden flex">
             <input
               type="text"
-              placeholder="Search any GitHub username..."
+              placeholder="Enter YOUR GitHub username to check your score..."
               className="bg-transparent px-5 py-3 text-white w-full outline-none text-sm"
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
@@ -106,6 +204,25 @@ export default function Dashboard() {
 
       {profile ? (
         <main className="max-w-7xl mx-auto px-6 pb-12 space-y-6 animate-fade-in">
+          {/* CTA Banner */}
+          <div className="glass rounded-2xl p-5 border border-cyan-400/20 flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-lg font-bold text-black flex-shrink-0">!</div>
+              <div>
+                <p className="text-sm font-medium text-white">See YOUR AutoDev Score</p>
+                <p className="text-xs text-gray-400">Type your GitHub username above and click Search</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+                if (input) { input.focus(); input.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+              }}
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-5 py-2.5 rounded-xl transition text-sm flex-shrink-0"
+            >
+              Search Your Profile
+            </button>
+          </div>
           {/* Profile Header */}
           <div className="glass rounded-2xl p-8 glow">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
@@ -147,6 +264,113 @@ export default function Dashboard() {
                 <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{label as string}</div>
               </div>
             ))}
+          </div>
+
+          {/* Badge Embed */}
+          <div className="glass rounded-2xl p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Badge</h3>
+                <p className="text-xs text-gray-500">Show off your score — add this to your GitHub README</p>
+              </div>
+              <img
+                src={`/api/badge?username=${profile.username}`}
+                alt="AutoDev Score"
+                className="h-5 flex-shrink-0"
+              />
+            </div>
+            <div className="mt-4 flex gap-2">
+              <div className="flex-1 glass rounded-lg px-4 py-2.5 text-xs text-gray-400 font-mono truncate select-all">
+                {`[![AutoDev Score](${typeof window !== 'undefined' ? window.location.origin : 'https://autodev-kappa.vercel.app'}/api/badge?username=${profile.username})](${typeof window !== 'undefined' ? window.location.origin : 'https://autodev-kappa.vercel.app'}/dashboard?user=${profile.username})`}
+              </div>
+              <button
+                onClick={() => {
+                  const text = `[![AutoDev Score](${typeof window !== 'undefined' ? window.location.origin : 'https://autodev-kappa.vercel.app'}/api/badge?username=${profile.username})](${typeof window !== 'undefined' ? window.location.origin : 'https://autodev-kappa.vercel.app'}/dashboard?user=${profile.username})`;
+                  navigator.clipboard.writeText(text);
+                  const btn = document.activeElement as HTMLButtonElement;
+                  btn.textContent = 'Copied!';
+                  setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+                }}
+                className="glass rounded-lg px-4 py-2.5 text-xs text-cyan-400 hover:bg-white/[0.08] transition font-medium"
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+
+          {/* Share */}
+          <div className="glass rounded-2xl p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Share</h3>
+                <p className="text-xs text-gray-500">Let your network know your score</p>
+              </div>
+            </div>
+            <div className="mt-4 flex gap-3 flex-wrap">
+              <a
+                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : 'https://autodev-kappa.vercel.app'}/dashboard?user=${profile.username}`)}`}
+                target="_blank"
+                className="flex-1 glass rounded-xl px-4 py-3 text-xs text-white hover:bg-white/[0.08] transition text-center font-medium min-w-[140px]"
+                style={{ backgroundColor: '#0a66c2' }}
+              >
+                Share on LinkedIn
+              </a>
+              <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`My AutoDev score is ${profile.overallScore}/100! Check yours →`)}&url=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : 'https://autodev-kappa.vercel.app'}/dashboard?user=${profile.username}`)}`}
+                target="_blank"
+                className="flex-1 glass rounded-xl px-4 py-3 text-xs text-white hover:bg-white/[0.08] transition text-center font-medium min-w-[140px]"
+                style={{ backgroundColor: '#000' }}
+              >
+                Share on 𝕏
+              </a>
+              <button
+                onClick={() => {
+                  const msg = `Hey! 👋\n\nI just built AutoDev — a free tool that analyzes your GitHub profile and gives you a score out of 100.\n\nCheck your score here: ${typeof window !== 'undefined' ? window.location.origin : 'https://autodev-kappa.vercel.app'}/dashboard\n\nWould love to know what you think!`;
+                  navigator.clipboard.writeText(msg);
+                  const btn = document.activeElement as HTMLButtonElement;
+                  btn.textContent = 'Copied!';
+                  setTimeout(() => { btn.textContent = '📋 Copy DM'; }, 3000);
+                }}
+                className="flex-1 glass rounded-xl px-4 py-3 text-xs text-gray-300 hover:bg-white/[0.08] transition text-center font-medium min-w-[140px]"
+              >
+                📋 Copy DM
+              </button>
+            </div>
+          </div>
+          <div className="glass rounded-2xl p-6 glow">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">PDF Report</h3>
+                <p className="text-xs text-gray-500">Download a recruiter-ready PDF of this analysis</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <div className="text-2xl font-bold text-cyan-400">₹99</div>
+                <div className="text-[10px] text-gray-500">one-time</div>
+              </div>
+            </div>
+
+            {paymentError && (
+              <div className="mt-4 glass rounded-xl px-4 py-3 text-xs text-amber-400 border border-amber-500/10">
+                {paymentError}
+              </div>
+            )}
+            <button
+              onClick={handlePayment}
+              disabled={paying}
+              className="mt-4 w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition disabled:opacity-50 text-sm flex items-center justify-center gap-2"
+            >
+              {paying ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  Download PDF Report
+                </>
+              )}
+            </button>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
@@ -273,6 +497,10 @@ export default function Dashboard() {
 
       <footer className="border-t border-white/5 py-8 text-center text-xs text-gray-600">
         AutoDev · npx autodev-agent · MIT
+        <br />
+        <a href="https://buymeacoffee.com/shashwatsrivastava" target="_blank" className="inline-flex items-center gap-1 mt-2 hover:text-amber-400 transition">
+          ☕ Buy me a coffee
+        </a>
       </footer>
     </div>
   );

@@ -2,6 +2,8 @@
 
 [![npm](https://img.shields.io/npm/v/autodev-agent)](https://www.npmjs.com/package/autodev-agent)
 [![Vercel](https://img.shields.io/badge/deployed-vercel-000)](https://autodev-kappa.vercel.app)
+[![AutoDev Score](https://autodev-kappa.vercel.app/api/badge?username=Shashwat1319)](https://autodev-kappa.vercel.app/dashboard?user=Shashwat1319)
+[![Buy Me a Coffee](https://img.shields.io/badge/donate-buymeacoffee-ffdd00)](https://buymeacoffee.com/shashwatsrivastava)
 
 AutoDev is a dual-component platform that:
 1. **Automates your git workflow** — watches local files, auto-commits, auto-pushes
@@ -66,10 +68,24 @@ Enter a GitHub username to get a scored report with recommendations.
 └────────────────────────────────────────────────────────┘
 ```
 
+## Show Your Score
+
+Add this badge to your GitHub README — every visitor sees your AutoDev score:
+
+```markdown
+[![AutoDev Score](https://autodev-kappa.vercel.app/api/badge?username=YOUR_USERNAME)](https://autodev-kappa.vercel.app/dashboard?user=YOUR_USERNAME)
+```
+
+## Support
+If you find AutoDev useful, consider buying me a coffee:
+
+[![Buy Me a Coffee](https://img.shields.io/badge/donate-buymeacoffee-ffdd00)](https://buymeacoffee.com/shashwatsrivastava)
+
 ## Links
 - **npm package**: `npx autodev-agent`
 - **Live platform**: https://autodev-kappa.vercel.app
 - **GitHub**: https://github.com/Shashwat1319/autodev-agent
+- **Get PDF Report**: Dashboard → Download PDF (₹99)
 
 ## License
 MIT

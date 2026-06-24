@@ -1,10 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { ProfileAnalysis } from '../../shared/types';
+import { rateLimit } from '../../lib/rate-limit';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.headers['x-real-ip']?.toString() || 'unknown';
+  const rl = rateLimit({ key: `analyze:${ip}`, maxRequests: 30, windowMs: 60000 });
+  if (!rl.allowed) return res.status(429).json({ error: `Too many requests. Try again in ${Math.ceil(rl.resetIn / 1000)}s.` });
+
   const { username } = req.query;
 
   if (!username || typeof username !== 'string') {
@@ -13,6 +18,9 @@ export default async function handler(
 
   try {
     const token = process.env.GITHUB_TOKEN || '';
+    if (!token && process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ GITHUB_TOKEN not set — GitHub API rate limited to 60 req/hr');
+    }
 
     const headers: Record<string, string> = {
       Accept: 'application/vnd.github.v3+json',

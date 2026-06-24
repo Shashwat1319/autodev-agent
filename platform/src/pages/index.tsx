@@ -24,6 +24,8 @@ const stats = [
   { value: 'Free', label: 'Open source' },
 ];
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://autodev-kappa.vercel.app';
+
 export default function Home() {
   const [username, setUsername] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
@@ -72,6 +74,8 @@ export default function Home() {
             <a href="#features" className="text-gray-400 hover:text-white transition">Features</a>
             <a href="#how-it-works" className="text-gray-400 hover:text-white transition">How it Works</a>
             <a href="/dashboard" className="text-gray-400 hover:text-white transition">Dashboard</a>
+            <a href="/leaderboard" className="text-gray-400 hover:text-white transition">Leaderboard</a>
+            <a href="/readme-generator" className="text-gray-400 hover:text-white transition">README</a>
             <a
               href="https://github.com/Shashwat1319/autodev-agent"
               target="_blank"
@@ -262,6 +266,35 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Badge */}
+      <section className="py-24 border-t border-white/5">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <span className="text-xs font-semibold text-cyan-400 uppercase tracking-[0.2em]">Viral</span>
+          <h2 className="text-4xl font-bold mt-3 mb-4">Show Off Your Score</h2>
+          <p className="text-gray-400 mb-8 max-w-xl mx-auto">
+            Add a badge to your GitHub README — every visitor sees your AutoDev score and clicks through to your full profile.
+          </p>
+          <div className="glass rounded-2xl p-8 max-w-lg mx-auto">
+            <img
+              src="/api/badge?username=Shashwat1319"
+              alt="AutoDev Score Badge"
+              className="h-5 mx-auto mb-6"
+            />
+            <div className="glass rounded-lg px-4 py-3 text-xs text-gray-400 font-mono mb-4 break-all select-all">
+              {`[![AutoDev Score](${BASE_URL}/api/badge?username=YOUR_USERNAME)](${BASE_URL}/dashboard?user=YOUR_USERNAME)`}
+            </div>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`[![AutoDev Score](${BASE_URL}/api/badge?username=YOUR_USERNAME)](${BASE_URL}/dashboard?user=YOUR_USERNAME)`);
+              }}
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition text-sm"
+            >
+              Copy Badge Code
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-24 border-t border-white/5 relative">
         <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/5 to-transparent" />
@@ -278,6 +311,19 @@ export default function Home() {
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
             </a>
           </div>
+        </div>
+      </section>
+
+      {/* Support */}
+      <section className="py-16 border-t border-white/5">
+        <div className="text-center">
+          <p className="text-xs text-gray-500 mb-3">Support the project</p>
+          <a href="https://buymeacoffee.com/shashwatsrivastava" target="_blank"
+            className="inline-flex items-center gap-2 glass rounded-xl px-6 py-3 text-sm text-gray-300 hover:bg-white/[0.08] transition hover:border-amber-400/30 group">
+            <span className="text-lg">☕</span>
+            <span>Buy me a coffee</span>
+            <span className="text-[10px] text-gray-500 group-hover:text-amber-400 transition">buymeacoffee.com/shashwatsrivastava</span>
+          </a>
         </div>
       </section>
 
