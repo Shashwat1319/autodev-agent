@@ -11,13 +11,12 @@ export default async function handler(
   const rl = rateLimit({ key: `og:${ip}`, maxRequests: 30, windowMs: 60000 });
   if (!rl.allowed) return res.status(429).json({ error: 'Too many requests' });
 
-  const { username } = req.query;
-  if (!username || typeof username !== 'string') {
-    return res.status(400).end();
-  }
+  const usernameParam = req.query.username;
+  const isGeneric = !usernameParam || typeof usernameParam !== 'string';
+  const displayUsername = isGeneric ? 'AutoDev' : String(usernameParam).replace(/&/g, '&amp;');
 
   try {
-    const analysis = await analyzeProfile(username);
+    const analysis = !isGeneric ? await analyzeProfile(usernameParam as string) : null;
 
     let avatar = '';
     let repos = 0;
@@ -58,13 +57,13 @@ export default async function handler(
       <rect x="60" y="50" width="36" height="36" rx="8" fill="url(#glow1)"/>
       <text x="78" y="75" fill="url(#glow1)" font-size="18" font-weight="900" text-anchor="middle" font-family="sans-serif">A</text>
       <text x="110" y="75" fill="#06b6d4" font-size="22" font-weight="700" font-family="sans-serif">{AutoDev}</text>
-      <text x="1140" y="75" fill="#6b7280" font-size="14" text-anchor="end" font-family="sans-serif">github.com/${String(username).replace(/&/g, '&amp;')}</text>
+      ${!isGeneric ? `<text x="1140" y="75" fill="#6b7280" font-size="14" text-anchor="end" font-family="sans-serif">github.com/${displayUsername}</text>` : ''}
 
-      ${avatar ? `<image href="${avatar}" x="552" y="140" width="96" height="96" rx="48"/>` : `
+      ${!isGeneric && avatar ? `<image href="${avatar}" x="552" y="140" width="96" height="96" rx="48"/>` : `
       <circle cx="600" cy="188" r="48" fill="#1a1f2e"/>
-      <text x="600" y="203" fill="#06b6d4" font-size="36" font-weight="700" text-anchor="middle" font-family="sans-serif">${(String(username)[0] || '?').toUpperCase()}</text>`}
+      <text x="600" y="203" fill="#06b6d4" font-size="36" font-weight="700" text-anchor="middle" font-family="sans-serif">${isGeneric ? 'A' : (String(usernameParam)[0] || '?').toUpperCase()}</text>`}
 
-      <text x="600" y="275" fill="#fff" font-size="36" font-weight="700" text-anchor="middle" font-family="sans-serif">${String(username).replace(/&/g, '&amp;')}</text>
+      <text x="600" y="275" fill="#fff" font-size="36" font-weight="700" text-anchor="middle" font-family="sans-serif">${displayUsername}</text>
 
       <rect x="350" y="310" width="500" height="60" rx="12" fill="rgba(255,255,255,0.05)"/>
       <text x="450" y="348" fill="#9ca3af" font-size="16" text-anchor="middle" font-family="sans-serif">AutoDev Score</text>

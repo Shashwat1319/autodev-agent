@@ -141,15 +141,26 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Head>
         <title>{profile ? `${profile.username} — AutoDev Dashboard` : 'Dashboard — AutoDev'}</title>
+        <meta name="description" content={profile ? `${profile.username}'s GitHub analysis: ${profile.totalRepos} repos, ${profile.totalStars} stars, score ${profile.overallScore}/100` : 'Analyze your GitHub profile, generate README, and download recruiter-ready PDF reports.'} />
         <meta property="og:title" content={profile ? `${profile.username}'s AutoDev Score: ${profile.overallScore}/100` : 'AutoDev — GitHub Profile Analyzer'} />
         <meta property="og:description" content={profile ? `Analyzed ${profile.totalRepos} repos · ${profile.totalStars} stars · ${profile.totalForks} forks` : 'Automate your git. Analyze your GitHub profile.'} />
-        <meta property="og:image" content={`${BASE_URL}/api/og?username=${profile?.username || username || ''}`} />
-        <meta property="og:url" content={`${BASE_URL}/dashboard?user=${profile?.username || username || ''}`} />
+        {profile?.username || username ? (
+          <>
+            <meta property="og:image" content={`${BASE_URL}/api/og?username=${profile?.username || username}`} />
+            <meta property="og:url" content={`${BASE_URL}/dashboard?user=${profile?.username || username}`} />
+            <meta name="twitter:image" content={`${BASE_URL}/api/og?username=${profile?.username || username}`} />
+          </>
+        ) : (
+          <>
+            <meta property="og:image" content={`${BASE_URL}/api/og`} />
+            <meta property="og:url" content={`${BASE_URL}/dashboard`} />
+            <meta name="twitter:image" content={`${BASE_URL}/api/og`} />
+          </>
+        )}
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={profile ? `${profile.username}'s AutoDev Score: ${profile.overallScore}/100` : 'AutoDev — GitHub Profile Analyzer'} />
         <meta name="twitter:description" content={profile ? `Analyzed ${profile.totalRepos} repos · ${profile.totalStars} stars · ${profile.totalForks} forks` : 'Automate your git. Analyze your GitHub profile.'} />
-        <meta name="twitter:image" content={`${BASE_URL}/api/og?username=${profile?.username || username || ''}`} />
       </Head>
 
       {/* Nav */}

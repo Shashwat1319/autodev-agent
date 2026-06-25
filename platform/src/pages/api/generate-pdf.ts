@@ -149,10 +149,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let y = H;
 
     const drawText = (text: string, x: number, yy: number, size: number, opts: any = {}) => {
+      const { bold: _b, color: _c, ...rest } = opts;
       currentPage.drawText(text, {
         x, y: yy, size,
-        font: opts.bold ? bold : font,
-        color: opts.color || WHITE, ...opts,
+        font: _b ? bold : font,
+        color: _c || WHITE, ...rest,
       });
     };
 
