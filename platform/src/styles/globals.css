@@ -62,6 +62,15 @@ body {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .container-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  .section-padding {
+    @apply py-12 sm:py-16 lg:py-24;
+  }
 }
 
 @keyframes float {

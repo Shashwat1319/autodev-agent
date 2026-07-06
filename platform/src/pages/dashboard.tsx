@@ -18,91 +18,6 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [paying, setPaying] = useState(false);
-  const [paymentError, setPaymentError] = useState('');
-
-  const handlePayment = useCallback(async () => {
-    setPaying(true);
-    setPaymentError('');
-    try {
-      const orderRes = await fetch('/api/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username }),
-      });
-      const order = await orderRes.json();
-
-      if (!orderRes.ok) {
-        if (order.error === 'PAYMENT_NOT_CONFIGURED') {
-          setPaymentError('PDF Report coming soon! Payment gateway is being set up.');
-          setPaying(false);
-          return;
-        }
-        throw new Error(order.error || 'Failed to create order');
-      }
-
-      if (!(window as any).Razorpay) {
-        await new Promise<void>((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-          script.onload = () => resolve();
-          script.onerror = () => reject(new Error('Failed to load Razorpay'));
-          document.body.appendChild(script);
-        });
-      }
-
-            const options = {
-        key: order.key_id,
-        amount: order.amount,
-        currency: order.currency,
-        name: 'AutoDev',
-        description: 'GitHub Profile PDF Report',
-        order_id: order.id,
-        handler: async function (response: any) {
-          try {
-            const pdfRes = await fetch('/api/generate-pdf', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                username,
-                payment_id: response.razorpay_payment_id,
-                order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
-            if (!pdfRes.ok) throw new Error('Failed to generate PDF');
-            const blob = await pdfRes.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${username}-autodev-report.pdf`;
-            a.click();
-            URL.revokeObjectURL(url);
-          } catch (e: any) {
-            setPaymentError('Payment successful! PDF generation failed. Contact support.');
-          }
-        },
-        modal: {
-          ondismiss: function () {
-            setPaying(false);
-          },
-        },
-        prefill: { name: username },
-        theme: { color: '#06b6d4' },
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.on('payment.failed', function (response: any) {
-        setPaymentError(`Payment failed: ${response.error.description}`);
-        setPaying(false);
-      });
-      rzp.open();
-    } catch (e: any) {
-      setPaymentError(e.message || 'Something went wrong');
-      setPaying(false);
-    }
-  }, [username]);
-
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const user = params.get('user') || localStorage.getItem('autodev_username') || '';
@@ -128,7 +43,6 @@ export default function Dashboard() {
       }
       const data = await res.json();
       setProfile(data);
-      setPaymentError('');
     } catch (err: any) {
       setError(err.message);
     }
@@ -165,7 +79,7 @@ export default function Dashboard() {
 
       {/* Nav */}
       <header className="glass border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-sm font-bold text-black group-hover:scale-105 transition">
               A
@@ -175,9 +89,9 @@ export default function Dashboard() {
             </span>
             <span className="text-xs text-gray-500 ml-2 hidden sm:inline">Dashboard</span>
           </a>
-          <nav className="flex items-center gap-4">
+          <nav className="flex items-center gap-2 sm:gap-4">
             <a href="/" className="text-xs text-gray-400 hover:text-white transition">Home</a>
-            <a href="/leaderboard" className="text-xs text-gray-400 hover:text-white transition">Leaderboard</a>
+            <a href="/leaderboard" className="text-xs text-gray-400 hover:text-white transition hidden sm:inline">Leaderboard</a>
             <a href="/readme-generator" className="text-xs text-gray-400 hover:text-white transition">README</a>
             <a href="/dashboard" className="text-xs text-cyan-400 font-medium">Dashboard</a>
           </nav>
@@ -185,13 +99,13 @@ export default function Dashboard() {
       </header>
 
       {/* Search Bar */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="flex gap-3 max-w-xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+        <div className="flex gap-2 sm:gap-3 max-w-xl">
           <div className="flex-1 glass rounded-xl overflow-hidden flex">
             <input
               type="text"
-              placeholder="Enter YOUR GitHub username to check your score..."
-              className="bg-transparent px-5 py-3 text-white w-full outline-none text-sm"
+              placeholder="Enter GitHub username..."
+              className="bg-transparent px-3 sm:px-5 py-2.5 sm:py-3 text-white w-full outline-none text-sm"
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && fetchProfile()}
@@ -317,7 +231,7 @@ export default function Dashboard() {
                 <p className="text-xs text-gray-500">Let your network know your score</p>
               </div>
             </div>
-            <div className="mt-4 flex gap-3 flex-wrap">
+            <div className="mt-4 flex flex-col sm:flex-row gap-3">
               <a
                 href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : 'https://autodev-kappa.vercel.app'}/dashboard?user=${profile.username}`)}`}
                 target="_blank"
@@ -348,58 +262,6 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-          <div className="glass rounded-2xl p-6 glow border border-cyan-400/20">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                  <span className="text-cyan-400">Premium</span> PDF Report
-                </h3>
-                <p className="text-xs text-gray-500">Recruiter-ready report with detailed audit + improvement roadmap</p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <div className="text-2xl font-bold text-cyan-400">₹99</div>
-                <div className="text-[10px] text-gray-500">one-time</div>
-              </div>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              <div className="glass rounded-xl px-3 py-2.5 text-center">
-                <div className="text-xs font-medium text-cyan-400">📄</div>
-                <div className="text-[10px] text-gray-500 mt-0.5">Recruiter PDF</div>
-              </div>
-              <div className="glass rounded-xl px-3 py-2.5 text-center">
-                <div className="text-xs font-medium text-cyan-400">🔍</div>
-                <div className="text-[10px] text-gray-500 mt-0.5">Profile Audit</div>
-              </div>
-              <div className="glass rounded-xl px-3 py-2.5 text-center">
-                <div className="text-xs font-medium text-cyan-400">📈</div>
-                <div className="text-[10px] text-gray-500 mt-0.5">Roadmap</div>
-              </div>
-            </div>
-
-            {paymentError && (
-              <div className="mt-4 glass rounded-xl px-4 py-3 text-xs text-amber-400 border border-amber-500/10">
-                {paymentError}
-              </div>
-            )}
-            <button
-              onClick={handlePayment}
-              disabled={paying}
-              className="mt-4 w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition disabled:opacity-50 text-sm flex items-center justify-center gap-2"
-            >
-              {paying ? (
-                <>
-                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                  Download Premium Report
-                </>
-              )}
-            </button>
-          </div>
-
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Languages */}
             <div className="glass rounded-2xl p-6">

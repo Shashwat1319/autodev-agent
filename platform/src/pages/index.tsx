@@ -70,7 +70,7 @@ export default function Home() {
 
       {/* Nav */}
       <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-sm font-bold text-black group-hover:scale-105 transition">
               A
@@ -79,7 +79,7 @@ export default function Home() {
               <span className="text-cyan-400">{'{'}</span>AutoDev<span className="text-cyan-400">{'}'}</span>
             </span>
           </a>
-          <nav className="hidden md:flex items-center gap-8 text-sm">
+          <nav className="hidden md:flex items-center gap-6 sm:gap-8 text-sm">
             <a href="#features" className="text-gray-400 hover:text-white transition">Features</a>
             <a href="#how-it-works" className="text-gray-400 hover:text-white transition">How it Works</a>
             <a href="/dashboard" className="text-gray-400 hover:text-white transition">Dashboard</a>
@@ -94,35 +94,40 @@ export default function Home() {
               GitHub
             </a>
           </nav>
+          <div className="md:hidden">
+            <a href="https://github.com/Shashwat1319/autodev-agent" target="_blank" className="text-gray-400 hover:text-white transition">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            </a>
+          </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
+      <section className="relative pt-20 sm:pt-32 pb-12 sm:pb-20 overflow-hidden">
         <div className="absolute inset-0 bg-grid opacity-40" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px]" />
-        <div className="relative max-w-7xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-sm text-cyan-300 mb-8 animate-fade-in">
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 sm:w-96 sm:h-96 bg-cyan-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 sm:w-96 sm:h-96 bg-blue-500/10 rounded-full blur-[120px]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-sm text-cyan-300 mb-6 sm:mb-8 animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse-slow" />
             v0.1.2 — npx autodev-agent
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight animate-slide-up">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight animate-slide-up text-balance">
             Your Code.<br />
             <span className="gradient-text">Auto-Piloted.</span>
           </h1>
-          <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-in">
+          <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-8 sm:mb-10 animate-fade-in text-balance">
             AutoDev watches your files, auto-commits and pushes to GitHub, 
             and builds a recruiter-ready portfolio — all without lifting a finger.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 animate-fade-in">
-            <div className="flex glass rounded-xl overflow-hidden glow mx-auto sm:mx-0">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10 sm:mb-12 animate-fade-in">
+            <div className="flex glass rounded-xl overflow-hidden glow w-full sm:w-auto mx-auto sm:mx-0">
               <input
                 type="text"
                 placeholder="Enter GitHub username..."
-                className="bg-transparent px-5 py-3.5 text-white w-64 outline-none text-sm"
+                className="bg-transparent px-4 sm:px-5 py-3 sm:py-3.5 text-white w-full sm:w-56 sm:w-64 outline-none text-sm"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && analyzeProfile()}
@@ -130,7 +135,7 @@ export default function Home() {
               <button
                 onClick={analyzeProfile}
                 disabled={analyzing}
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 py-3.5 transition disabled:opacity-50 text-sm"
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-4 sm:px-6 py-3 sm:py-3.5 transition disabled:opacity-50 text-sm whitespace-nowrap"
               >
                 {analyzing ? (
                   <span className="flex items-center gap-2">
@@ -140,18 +145,18 @@ export default function Home() {
                 ) : 'Analyze'}
               </button>
             </div>
-            <a href="#how-it-works" className="inline-flex items-center gap-2 glass text-gray-300 px-6 py-3.5 rounded-xl hover:bg-white/[0.08] transition text-sm">
+            <a href="#how-it-works" className="inline-flex items-center gap-2 glass text-gray-300 px-4 sm:px-6 py-3 sm:py-3.5 rounded-xl hover:bg-white/[0.08] transition text-sm whitespace-nowrap">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               See How it Works
             </a>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto animate-fade-in">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto animate-fade-in">
             {stats.map(s => (
-              <div key={s.label} className="glass rounded-xl p-4 text-center">
-                <div className="text-sm font-semibold text-cyan-400 mb-0.5">{s.value}</div>
-                <div className="text-xs text-gray-500">{s.label}</div>
+              <div key={s.label} className="glass rounded-xl p-3 sm:p-4 text-center">
+                <div className="text-xs sm:text-sm font-semibold text-cyan-400 mb-0.5">{s.value}</div>
+                <div className="text-[10px] sm:text-xs text-gray-500">{s.label}</div>
               </div>
             ))}
           </div>
@@ -223,19 +228,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="py-24 relative">
+{/* Features */}
+      <section id="features" className="section-padding relative">
         <div className="absolute inset-0 bg-gradient-radial opacity-50" />
-        <div className="relative max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
+        <div className="relative max-w-7xl mx-auto container-padding">
+          <div className="text-center mb-10 sm:mb-16">
             <span className="text-xs font-semibold text-cyan-400 uppercase tracking-[0.2em]">Features</span>
-            <h2 className="text-4xl font-bold mt-3 mb-4">Everything You Need</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-3 mb-4">Everything You Need</h2>
             <p className="text-gray-400 max-w-xl mx-auto">From auto-git to profile analysis — one platform handles it all.</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {features.map(f => (
-              <div key={f.title} className="glass rounded-xl p-6 glass-hover">
-                <div className="text-2xl mb-3">{f.icon}</div>
+              <div key={f.title} className="glass rounded-xl p-4 sm:p-6 glass-hover">
+                <div className="text-xl sm:text-2xl mb-3">{f.icon}</div>
                 <h3 className="text-white font-semibold mb-1.5">{f.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">{f.desc}</p>
               </div>
@@ -245,24 +250,24 @@ export default function Home() {
       </section>
 
       {/* How it Works */}
-      <section id="how-it-works" className="py-24 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
+      <section id="how-it-works" className="section-padding border-t border-white/5">
+        <div className="max-w-7xl mx-auto container-padding">
+          <div className="text-center mb-10 sm:mb-16">
             <span className="text-xs font-semibold text-cyan-400 uppercase tracking-[0.2em]">How It Works</span>
-            <h2 className="text-4xl font-bold mt-3 mb-4">Start in Seconds</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-3 mb-4">Start in Seconds</h2>
             <p className="text-gray-400 max-w-xl mx-auto">Four simple steps from zero to auto-piloted.</p>
           </div>
-          <div className="grid md:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {steps.map(s => (
-              <div key={s.num} className="glass rounded-xl p-6 text-center group hover:border-cyan-400/30 transition">
-                <div className="text-4xl font-bold text-cyan-400/30 group-hover:text-cyan-400 transition mb-3">{s.num}</div>
+              <div key={s.num} className="glass rounded-xl p-4 sm:p-6 text-center group hover:border-cyan-400/30 transition">
+                <div className="text-3xl sm:text-4xl font-bold text-cyan-400/30 group-hover:text-cyan-400 transition mb-3">{s.num}</div>
                 <h3 className="text-white font-semibold mb-1.5">{s.title}</h3>
                 <p className="text-gray-400 text-sm">{s.desc}</p>
               </div>
             ))}
           </div>
-          <div className="mt-8 text-center">
-            <div className="inline-flex items-center gap-2 glass rounded-xl px-6 py-3">
+          <div className="mt-6 sm:mt-8 text-center">
+            <div className="inline-flex items-center gap-2 glass rounded-xl px-4 sm:px-6 py-3">
               <code className="text-cyan-400 text-sm font-mono">$ npx autodev-agent</code>
               <button
                 onClick={() => navigator.clipboard.writeText('npx autodev-agent')}
@@ -276,27 +281,27 @@ export default function Home() {
       </section>
 
       {/* Badge */}
-      <section className="py-24 border-t border-white/5">
-        <div className="max-w-3xl mx-auto px-6 text-center">
+      <section className="section-padding border-t border-white/5">
+        <div className="max-w-3xl mx-auto container-padding text-center">
           <span className="text-xs font-semibold text-cyan-400 uppercase tracking-[0.2em]">Viral</span>
-          <h2 className="text-4xl font-bold mt-3 mb-4">Show Off Your Score</h2>
-          <p className="text-gray-400 mb-8 max-w-xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-3 mb-4">Show Off Your Score</h2>
+          <p className="text-gray-400 mb-6 sm:mb-8 max-w-xl mx-auto">
             Add a badge to your GitHub README — every visitor sees your AutoDev score and clicks through to your full profile.
           </p>
-          <div className="glass rounded-2xl p-8 max-w-lg mx-auto">
+          <div className="glass rounded-2xl p-6 sm:p-8 max-w-lg mx-auto">
             <img
               src="/api/badge?username=Shashwat1319"
               alt="AutoDev Score Badge"
               className="h-5 mx-auto mb-6"
             />
-            <div className="glass rounded-lg px-4 py-3 text-xs text-gray-400 font-mono mb-4 break-all select-all">
+            <div className="glass rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs text-gray-400 font-mono mb-4 break-all select-all overflow-x-auto">
               {`[![AutoDev Score](${BASE_URL}/api/badge?username=YOUR_USERNAME)](${BASE_URL}/dashboard?user=YOUR_USERNAME)`}
             </div>
             <button
               onClick={() => {
                 navigator.clipboard.writeText(`[![AutoDev Score](${BASE_URL}/api/badge?username=YOUR_USERNAME)](${BASE_URL}/dashboard?user=YOUR_USERNAME)`);
               }}
-              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition text-sm"
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl transition text-sm"
             >
               Copy Badge Code
             </button>
@@ -304,60 +309,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="py-24 border-t border-white/5">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <span className="text-xs font-semibold text-cyan-400 uppercase tracking-[0.2em]">Pricing</span>
-            <h2 className="text-4xl font-bold mt-3 mb-4">Simple. One Price.</h2>
-            <p className="text-gray-400 max-w-xl mx-auto">All tools are free. Pay only when you need a recruiter-ready report.</p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            <div className="glass rounded-2xl p-8 text-center">
-              <div className="text-3xl font-bold text-white mb-2">Free</div>
-              <div className="text-xs text-gray-500 mb-6">Everything you need to start</div>
-              <ul className="text-left space-y-3 text-sm text-gray-400 mb-8">
-                <li className="flex items-center gap-2"><span className="text-green-400">✓</span> GitHub Profile Score</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">✓</span> README Generator (3 styles)</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Leaderboard Rankings</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Shareable Badge</li>
-                <li className="flex items-center gap-2"><span className="text-green-400">✓</span> npx autodev-agent</li>
-              </ul>
-              <a href="/dashboard" className="block w-full glass rounded-xl px-6 py-3 text-sm text-cyan-400 hover:bg-white/[0.06] transition font-medium">
-                Get Started Free
-              </a>
-            </div>
-            <div className="glass rounded-2xl p-8 text-center border border-cyan-400/20 glow">
-              <div className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-2">Premium</div>
-              <div className="text-3xl font-bold text-white mb-1">₹99</div>
-              <div className="text-xs text-gray-500 mb-6">one-time · no subscription</div>
-              <ul className="text-left space-y-3 text-sm text-gray-400 mb-8">
-                <li className="flex items-center gap-2"><span className="text-cyan-400">✓</span> Recruiter-ready PDF Report</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">✓</span> Detailed Profile Audit</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">✓</span> Improvement Roadmap</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">✓</span> Full Stats & Charts</li>
-                <li className="flex items-center gap-2"><span className="text-cyan-400">✓</span> All Free Features</li>
-              </ul>
-              <a href="/dashboard" className="block w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition text-sm">
-                Get Premium Report
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA */}
-      <section className="py-24 border-t border-white/5 relative">
+      <section className="section-padding border-t border-white/5 relative">
         <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/5 to-transparent" />
-        <div className="relative max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold mb-4">Ready to Auto-Pilot Your Git?</h2>
-          <p className="text-gray-400 mb-8">Stop typing git commands. Start building.</p>
+        <div className="relative max-w-3xl mx-auto container-padding text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Ready to Auto-Pilot Your Git?</h2>
+          <p className="text-gray-400 mb-6 sm:mb-8">Stop typing git commands. Start building.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/dashboard" className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-8 py-3.5 rounded-xl transition glow-hover">
+            <a href="/dashboard" className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl transition glow-hover whitespace-nowrap">
               Open Dashboard
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
             </a>
-            <a href="https://github.com/Shashwat1319/autodev-agent" target="_blank" className="inline-flex items-center gap-2 glass text-gray-300 px-8 py-3.5 rounded-xl hover:bg-white/[0.08] transition">
+            <a href="https://github.com/Shashwat1319/autodev-agent" target="_blank" className="inline-flex items-center gap-2 glass text-gray-300 px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl hover:bg-white/[0.08] transition whitespace-nowrap">
               View on GitHub
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
             </a>
@@ -366,26 +329,26 @@ export default function Home() {
       </section>
 
       {/* Support */}
-      <section className="py-16 border-t border-white/5">
+      <section className="section-padding border-t border-white/5">
         <div className="text-center">
           <p className="text-xs text-gray-500 mb-3">Support the project</p>
           <a href="https://buymeacoffee.com/shashwatsrivastava" target="_blank"
-            className="inline-flex items-center gap-2 glass rounded-xl px-6 py-3 text-sm text-gray-300 hover:bg-white/[0.08] transition hover:border-amber-400/30 group">
+            className="inline-flex items-center gap-2 glass rounded-xl px-4 sm:px-6 py-3 text-sm text-gray-300 hover:bg-white/[0.08] transition hover:border-amber-400/30 group">
             <span className="text-lg">☕</span>
             <span>Buy me a coffee</span>
-            <span className="text-[10px] text-gray-500 group-hover:text-amber-400 transition">buymeacoffee.com/shashwatsrivastava</span>
+            <span className="text-[10px] text-gray-500 group-hover:text-amber-400 transition hidden sm:inline">buymeacoffee.com/shashwatsrivastava</span>
           </a>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-10">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-white/5 py-8 sm:py-10">
+        <div className="max-w-7xl mx-auto container-padding flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-xs font-bold text-black">A</div>
             <span className="text-sm text-gray-500">AutoDev</span>
           </div>
-          <div className="flex items-center gap-6 text-xs text-gray-500">
+          <div className="flex items-center gap-4 sm:gap-6 text-xs text-gray-500 flex-wrap justify-center">
             <span>MIT License</span>
             <span>·</span>
             <span>Built with ❤️</span>

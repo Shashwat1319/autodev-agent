@@ -1,91 +1,70 @@
-# AutoDev — Your Code. Auto-Piloted.
+# AutoDev — Auto-Git Agent + GitHub Profile Analyzer & Free README Generator
 
-[![npm](https://img.shields.io/npm/v/autodev-agent)](https://www.npmjs.com/package/autodev-agent)
-[![Vercel](https://img.shields.io/badge/deployed-vercel-000)](https://autodev-kappa.vercel.app)
-[![AutoDev Score](https://autodev-kappa.vercel.app/api/badge?username=Shashwat1319)](https://autodev-kappa.vercel.app/dashboard?user=Shashwat1319)
-[![Buy Me a Coffee](https://img.shields.io/badge/donate-buymeacoffee-ffdd00)](https://buymeacoffee.com/shashwatsrivastava)
+<div align="center">
+  <a href="https://autodev-kappa.vercel.app"><img src="https://img.shields.io/badge/deployed-vercel-000?style=for-the-badge" /></a>
+  <a href="https://www.npmjs.com/package/autodev-agent"><img src="https://img.shields.io/npm/v/autodev-agent?style=for-the-badge" /></a>
+  <a href="https://autodev-kappa.vercel.app/api/badge?username=Shashwat1319"><img src="https://autodev-kappa.vercel.app/api/badge?username=Shashwat1319" /></a>
+</div>
 
-AutoDev is a dual-component platform that:
-1. **Automates your git workflow** — watches local files, auto-commits, auto-pushes
-2. **Analyzes your GitHub profile** — generates AI-powered portfolio reports
+**AutoDev** is a dual-component platform — a local git automation agent and a cloud-based GitHub profile analyzer with a free README generator.
+
+## What It Does
+
+### 🤖 Local Agent (`npx autodev-agent`)
+Run in your terminal — watches files, auto-commits with smart debouncing, and auto-pushes to GitHub. No manual `git add`, `git commit`, or `git push` ever again.
+
+### 🌐 Cloud Platform (autodev-kappa.vercel.app)
+| Tool | Description |
+|---|---|
+| **Profile Analyzer** | Score/100, language breakdown, activity graph, streak stats, top repos |
+| **README Generator** | 3 styles (Professional/Minimal/Recruiter) — capsule header, typing SVG, pinned cards, activity graph — preview, copy, or download for free |
+| **Leaderboard** | Ranked profiles by score with search |
+| **Shareable Badge** | Dynamic SVG badge for your GitHub profile |
+| **OG Image** | Auto-generated social preview images |
+
+**100% free. No login. No signup. No database (live GitHub API).**
 
 ## Quick Start
 
-### Use the Agent (one command)
+### Run the agent (one command)
 ```bash
 npx autodev-agent
 ```
-That's it. Install not required. The agent watches your code and auto-commits/pushes.
+Zero config, no install needed.
 
-### Configure your repos
-Create `~/.autodev/config.json`:
-```json
-{
-  "repos": [
-    {
-      "localPath": "/path/to/your/project",
-      "remoteUrl": "https://github.com/you/project.git",
-      "branch": "main",
-      "enabled": true
-    }
-  ],
-  "autoCommit": true,
-  "autoPush": true,
-  "commitThreshold": 60
-}
-```
+### Analyze any profile
+Go to **[autodev-kappa.vercel.app/dashboard](https://autodev-kappa.vercel.app/dashboard)** → enter username → see score, languages, activity graph, streak, recommendations.
 
-### Analyze any GitHub profile
-Visit the live platform: **[https://autodev-kappa.vercel.app](https://autodev-kappa.vercel.app)**
+### Generate your README
+Go to **[autodev-kappa.vercel.app/readme-generator](https://autodev-kappa.vercel.app/readme-generator)** → pick a style → generate → copy or download.
 
-Enter a GitHub username to get a scored report with recommendations.
+## Badge
 
-## What AutoDev Does
-
-| Feature | Description |
-|---|---|
-| 🔄 Auto-commit | Watches your files, commits after inactivity |
-| 🚀 Auto-push | Pushes to GitHub automatically |
-| 📊 Profile Analysis | Scores repos, languages, consistency |
-| 📄 Portfolio Report | Generates recruiter-ready shareable link |
-| 📱 Dashboard | Live activity feed and stats |
-
-## Architecture
-
-```
-┌────────────────────────────────────────────────────────┐
-│                    AutoDev                              │
-├────────────────────────────────────────────────────────┤
-│  ┌──────────────────┐    ┌─────────────────────────┐   │
-│  │  LOCAL AGENT      │    │   CLOUD PLATFORM        │   │
-│  │  (npx/npm)        │◄──►│   (Web Dashboard)       │   │
-│  │                   │    │                         │   │
-│  │  • File Watcher   │    │  • Profile Analyzer     │   │
-│  │  • Git Engine     │    │  • AI Report Gen        │   │
-│  │  • Sync Queue     │    │  • Live Dashboard       │   │
-│  │  • Offline Mode   │    │  • Portfolio Hosting    │   │
-│  └──────────────────┘    └─────────────────────────┘   │
-└────────────────────────────────────────────────────────┘
-```
-
-## Show Your Score
-
-Add this badge to your GitHub README — every visitor sees your AutoDev score:
+Add this to your GitHub profile README:
 
 ```markdown
 [![AutoDev Score](https://autodev-kappa.vercel.app/api/badge?username=YOUR_USERNAME)](https://autodev-kappa.vercel.app/dashboard?user=YOUR_USERNAME)
 ```
 
-## Support
-If you find AutoDev useful, consider buying me a coffee:
+## Stack
 
-[![Buy Me a Coffee](https://img.shields.io/badge/donate-buymeacoffee-ffdd00)](https://buymeacoffee.com/shashwatsrivastava)
+| Component | Tech |
+|---|---|
+| Framework | Next.js 14 (Pages Router) |
+| Styling | Tailwind CSS + glassmorphism utilities |
+| Images | Sharp (SVG→PNG for OG images) |
+| Hosting | Vercel (free tier, auto-deploy from GitHub) |
+| Agent | Node.js CLI published on npm |
+| Rate Limit | In-memory per-IP (no Redis) |
+| Analytics | @vercel/analytics |
 
 ## Links
-- **npm package**: `npx autodev-agent`
-- **Live platform**: https://autodev-kappa.vercel.app
-- **GitHub**: https://github.com/Shashwat1319/autodev-agent
-- **Get PDF Report**: Dashboard → Download PDF (₹99)
+
+- **Platform**: https://autodev-kappa.vercel.app
+- **Agent**: `npx autodev-agent` (npm: [autodev-agent](https://www.npmjs.com/package/autodev-agent))
+- **Source**: https://github.com/Shashwat1319/autodev-agent
+- **Support**: [Buy me a coffee](https://buymeacoffee.com/shashwatsrivastava)
 
 ## License
+
 MIT

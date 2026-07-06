@@ -22,102 +22,197 @@ function generateReadme(data: {
   score: number;
 }, style: string): string {
   const name = data.name || data.username;
-  const twitterBadge = data.twitter ? `[![X](https://img.shields.io/twitter/follow/${data.twitter}?style=social)](https://x.com/${data.twitter})` : '';
+  const e = (s: string) => encodeURIComponent(s);
 
-  const statsBar = `<div align="center">
-  <img src="https://img.shields.io/badge/Repos-${data.totalRepos}-blue?style=flat-square" />
-  <img src="https://img.shields.io/badge/Stars-${data.totalStars}-yellow?style=flat-square" />
-  <img src="https://img.shields.io/badge/Forks-${data.totalForks}-orange?style=flat-square" />
-  <img src="https://custom-icon-badges.demolab.com/badge/AutoDev%20Score-${data.score}-brightgreen?logo=star&style=flat-square" />
-</div>`;
+  const statsBar = `<p align="center">
+  <img src="https://img.shields.io/badge/Repos-${data.totalRepos}-blue?style=for-the-badge&logo=github&logoColor=white" />
+  <img src="https://img.shields.io/badge/Stars-${data.totalStars}-yellow?style=for-the-badge&logo=star&logoColor=black" />
+  <img src="https://img.shields.io/badge/Forks-${data.totalForks}-orange?style=for-the-badge&logo=git&logoColor=white" />
+  <img src="https://img.shields.io/badge/AutoDev%20Score-${data.score}-${getScoreColor(data.score)}?style=for-the-badge&logo=target&logoColor=white" />
+</p>`;
 
-  const langBar = data.languages.length > 0
-    ? `\n${data.languages.map(l => `![${l.name}](https://img.shields.io/badge/${encodeURIComponent(l.name)}-${l.percentage}%25-${getLangColor(l.name)}?style=flat-square)`).join(' ')}\n`
+  const langBadges = data.languages.length > 0
+    ? data.languages.map(l =>
+      `<img src="https://img.shields.io/badge/${e(l.name)}-${l.percentage}%25-${getLangColor(l.name)}?style=for-the-badge&logoColor=white" />`
+    ).join('\n  ')
     : '';
 
-  const topReposSection = data.topRepos.length > 0
-    ? `\n### 📌 Pinned Repositories\n\n${data.topRepos.map(r =>
-      `#### [${r.name}](${r.url})\n${r.description}\n${r.topics.length > 0 ? `\`${r.topics.join('` `')}\`\n` : ''}⭐ ${r.stars} · 🍴 ${r.forks} · 🔧 ${r.language}`
-    ).join('\n\n')}`
+  const pinnedCards = data.pinned.length > 0
+    ? `<div align="center">\n${data.pinned.map((r, i) =>
+      i % 2 === 0
+        ? `  <a href="${r.url}">\n    <img align="center" src="https://github-readme-stats.vercel.app/api/pin/?username=${data.username}&repo=${r.name}&theme=tokyonight" />\n  </a>`
+        : `  <a href="${r.url}">\n    <img align="center" src="https://github-readme-stats.vercel.app/api/pin/?username=${data.username}&repo=${r.name}&theme=tokyonight" />\n  </a>`
+    ).join('\n')}\n</div>`
     : '';
 
-  const pinnedSection = data.pinned.length > 0
-    ? `\n### 📌 Pinned\n\n${data.pinned.map(r =>
-      `[![${r.name}](https://github-readme-stats.vercel.app/api/pin/?username=${data.username}&repo=${r.name})](${r.url})`
-    ).join('\n')}`
+  const topReposCards = data.topRepos.length > 0
+    ? `<div align="center">\n${data.topRepos.map((r, i) =>
+      i % 2 === 0
+        ? `  <a href="${r.url}">\n    <img align="center" src="https://github-readme-stats.vercel.app/api/pin/?username=${data.username}&repo=${r.name}&theme=tokyonight" />\n  </a>`
+        : `  <a href="${r.url}">\n    <img align="center" src="https://github-readme-stats.vercel.app/api/pin/?username=${data.username}&repo=${r.name}&theme=tokyonight" />\n  </a>`
+    ).join('\n')}\n</div>`
     : '';
 
   const activitySection = data.recentActivity.length > 0
     ? `\n### ⚡ Recent Activity\n\n${data.recentActivity.map(a => `- ${a}`).join('\n')}`
     : '';
 
-  const scoreBadge = `[![AutoDev Score](https://img.shields.io/badge/AutoDev%20Score-${data.score}/100-${getScoreColor(data.score)}?style=for-the-badge)](https://autodev-kappa.vercel.app/dashboard?user=${data.username})`;
+  const scoreBadge = `[![AutoDev Score](https://img.shields.io/badge/AutoDev%20Score-${data.score}/100-${getScoreColor(data.score)}?style=for-the-badge&logo=target&logoColor=white)](https://autodev-kappa.vercel.app/dashboard?user=${data.username})`;
+
+  const aboutLines: string[] = [];
+  if (data.bio && data.bio !== 'No bio') aboutLines.push(data.bio);
+  if (data.location) aboutLines.push(`🌍 **Location:** ${data.location}`);
+  if (data.company) aboutLines.push(`🏢 **Company:** ${data.company}`);
+  if (data.blog) aboutLines.push(`🔗 **Website:** [${data.blog}](${data.blog})`);
+  aboutLines.push(`📊 **GitHub:** [${data.username}](https://github.com/${data.username})`);
+
+  const typingLines: string[] = [];
+  if (data.bio && data.bio !== 'No bio') {
+    const words = data.bio.split(' ');
+    if (words.length > 3) typingLines.push(words.slice(0, 4).join(' '));
+    if (words.length > 7) typingLines.push(words.slice(4, 8).join(' '));
+  }
+  if (data.location) typingLines.push(`Based in ${data.location}`);
+  if (data.company) typingLines.push(`Working at ${data.company}`);
+  if (typingLines.length === 0) typingLines.push('Building Amazing Software', 'Open Source Enthusiast', 'Full Stack Developer');
+
+  const socialBadges: string[] = [];
+  if (data.twitter) socialBadges.push(`<a href="https://x.com/${data.twitter}"><img src="https://img.shields.io/badge/X-000000?style=flat-square&logo=x&logoColor=white" /></a>`);
+  if (data.blog) socialBadges.push(`<a href="${data.blog}"><img src="https://img.shields.io/badge/Portfolio-000000?style=flat-square&logo=vercel&logoColor=white" /></a>`);
+  socialBadges.push(`<a href="https://github.com/${data.username}"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white" /></a>`);
 
   const templates: Record<string, string> = {
-    minimal: `# 👋 Hello, I'm ${name}${data.bio && data.bio !== 'No bio' ? `\n\n${data.bio}` : ''}
+    minimal: `# 👋 Hello, I'm ${name}
+
+${data.bio && data.bio !== 'No bio' ? `${data.bio}` : ''}
 
 ${statsBar}
 
-${data.location ? `📍 ${data.location}` : ''} ${data.company ? `· 🏢 ${data.company}` : ''} ${data.blog ? `· 🔗 ${data.blog}` : ''}
+---
 
-${langBar}
+### 🛠️ Languages
+
+<div align="center">
+  ${langBadges || 'No language data available'}
+</div>
+
+${data.languages.length > 0 ? `<p align="center">
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=${data.username}&layout=compact&theme=tokyonight&count_private=true&hide_progress=false" alt="Top Languages" />
+</p>` : ''}
 
 ---
 
-${scoreBadge}
+<div align="center">
+  ${scoreBadge}
+</div>
+
+<p align="center">
+  <img src="https://komarev.com/ghpvc/?username=${data.username}&color=blueviolet" alt="Profile Views" />
+</p>
 `,
 
-    professional: `# ${name}
+    professional: `<!-- Header Wave -->
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=220&section=header&text=${e(name)}&fontSize=70&animation=fadeIn&fontAlignY=35&desc=AutoDev%20Generated%20Profile&descSize=20&descAlignY=55" />
+</p>
 
-${statsBar}
-
-${twitterBadge}
-
----
-
-## 👨‍💻 About Me
-
-${data.bio && data.bio !== 'No bio' ? `> ${data.bio}` : ''}
-
-${data.location ? `- 🌍 **Location:** ${data.location}` : ''}
-${data.company ? `- 🏢 **Company:** ${data.company}` : ''}
-${data.blog ? `- 🔗 **Website:** [${data.blog}](${data.blog})` : ''}
-- 📊 **GitHub:** [${data.username}](https://github.com/${data.username})
+<!-- Typing Effect -->
+<p align="center">
+  <a href="https://github.com/${data.username}">
+    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=38BDF8&center=true&vCenter=true&width=435&lines=${e(typingLines[0] || 'Building Amazing Software')};${e(typingLines[1] || 'Open Source Enthusiast')};${e(typingLines[2] || 'Full Stack Developer')}" />
+  </a>
+</p>
 
 ---
 
-## 🛠️ Languages & Tools
+### 👨‍💻 About Me
 
-${langBar}
-${data.languages.length > 0 ? data.languages.map(l => `- **${l.name}** — ${l.percentage}% of repos`).join('\n') : ''}
+${aboutLines.map(l => `> ${l}`).join('\n')}
 
-${topReposSection}
+${data.totalRepos > 5 ? `
+---
+
+### 🛠️ Tech Stack
+
+<div align="center">
+  ${langBadges || 'No language data available'}
+</div>
+
+<p align="center">
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=${data.username}&layout=compact&theme=tokyonight&count_private=true&hide_progress=false" alt="Top Languages" />
+</p>
+` : ''}
+
+---
+
+### 📈 GitHub Impact
+
+<p align="center">
+  <img src="https://github-readme-activity-graph.vercel.app/graph?username=${data.username}&theme=tokyonight&hide_border=true&area=true" width="100%" />
+</p>
+
+${data.totalRepos > 0 ? `<p align="center">
+  <img src="https://github-readme-streak-stats.herokuapp.com/?user=${data.username}&theme=tokyonight&hide_border=true" alt="Streak Stats" />
+</p>` : ''}
+
+${data.topRepos.length > 0 ? `
+---
+
+### 🚀 Highlighted Repositories
+
+${topReposCards}
+
+<p align="center">
+  <i><a href="https://github.com/${data.username}?tab=repositories">Explore all ${data.totalRepos} repositories →</a></i>
+</p>
+` : ''}
 
 ${activitySection}
 
 ---
 
 <div align="center">
-  <i>Profile auto-generated by <a href="https://autodev-kappa.vercel.app">AutoDev</a></i>
+  ${scoreBadge}
 </div>
+
+### 📫 Connect with me
+
+<p align="center">
+  ${socialBadges.join('\n  ')}
+</p>
+
+<p align="center">
+  <img src="https://komarev.com/ghpvc/?username=${data.username}&color=blueviolet" alt="Profile Views" />
+</p>
+
+<p align="center">
+  <i>"Writing code that writes code to make life easier."</i>
+</p>
+
+<p align="center">
+  <i>Profile auto-generated by <a href="https://autodev-kappa.vercel.app">AutoDev</a></i>
+</p>
 `,
 
-    recruiter: `# ${name}
-
-${statsBar}
+    recruiter: `<!-- Header Wave -->
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=auto&height=200&section=header&text=${e(name)}&fontSize=60&animation=fadeIn&fontAlignY=35&desc=Recruiter-Ready%20Profile&descSize=18&descAlignY=55" />
+</p>
 
 ---
 
-## 📋 Summary
+### 📋 Professional Summary
 
-${data.bio && data.bio !== 'No bio' ? `${data.bio}` : `${name} is a developer with ${data.totalRepos} public repositories and ${data.totalStars} stars across their projects.`}
+> ${data.bio && data.bio !== 'No bio' ? data.bio : `${name} is a developer with ${data.totalRepos} public repositories and ${data.totalStars} stars across their projects.`}
 
 ${data.location ? `- 📍 **Based in:** ${data.location}` : ''}
 ${data.company ? `- 💼 **Currently:** ${data.company}` : ''}
+${data.blog ? `- 🔗 **Website:** [${data.blog}](${data.blog})` : ''}
+- 📊 **GitHub:** [${data.username}](https://github.com/${data.username})
 
 ---
 
-## 📊 GitHub Statistics
+### 📊 GitHub Statistics
 
 | Metric | Value |
 |--------|-------|
@@ -126,20 +221,52 @@ ${data.company ? `- 💼 **Currently:** ${data.company}` : ''}
 | Repository Forks | ${data.totalForks} |
 | AutoDev Score | ${data.score}/100 |
 
-${langBar}
+${data.languages.length > 0 ? `
+### 🛠️ Languages
 
-## 🔝 Top Projects
+<div align="center">
+  ${langBadges}
+</div>
 
-${data.topRepos.length > 0 ? `| # | Repository | Stars | Forks | Language |\n|---|------------|:----:|:----:|:--------:|\n${data.topRepos.map((r, i) => `| ${i + 1} | [${r.name}](${r.url}) | ${r.stars} | ${r.forks} | ${r.language} |`).join('\n')}` : ''}
+<p align="center">
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=${data.username}&layout=compact&theme=tokyonight&count_private=true" alt="Top Languages" />
+</p>
+` : ''}
 
-${pinnedSection}
+---
+
+<p align="center">
+  <img src="https://github-readme-activity-graph.vercel.app/graph?username=${data.username}&theme=tokyonight&hide_border=true&area=true" width="100%" />
+</p>
+
+${data.topRepos.length > 0 ? `
+### 🔝 Top Projects
+
+| # | Repository | Stars | Forks | Language |
+|---|------------|:----:|:----:|:--------:|
+${data.topRepos.map((r, i) => `| ${i + 1} | [${r.name}](${r.url}) | ${r.stars} | ${r.forks} | ${r.language} |`).join('\n')}
+` : ''}
+
+${data.pinned.length > 0 ? `
+### 📌 Pinned Repositories
+
+${pinnedCards}
+` : ''}
 
 ---
 
 <div align="center">
-  <i>Recruiter-ready profile · Generated by <a href="https://autodev-kappa.vercel.app">AutoDev</a></i>
-  <br/>
   ${scoreBadge}
+  <br/><br/>
+  <a href="https://buymeacoffee.com/shashwatsrivastava">
+    <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me a Coffee" />
+  </a>
+</div>
+
+<br/>
+
+<div align="center">
+  <i>Recruiter-ready profile · Generated by <a href="https://autodev-kappa.vercel.app">AutoDev</a></i>
 </div>
 `,
   };
