@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import { useState, useEffect, useCallback } from 'react';
+import PHBanner from '../components/PHBanner';
 
 const langColors: Record<string, string> = {
   JavaScript: '#f7df1e', TypeScript: '#3178c6', Python: '#3572A5',
@@ -78,8 +79,9 @@ export default function Dashboard() {
       </Head>
 
       {/* Nav */}
-      <header className="glass border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-50">
+        <div className="glass border-b border-white/5">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-sm font-bold text-black group-hover:scale-105 transition">
               A
@@ -95,11 +97,13 @@ export default function Dashboard() {
             <a href="/readme-generator" className="text-xs text-gray-400 hover:text-white transition">README</a>
             <a href="/dashboard" className="text-xs text-cyan-400 font-medium">Dashboard</a>
           </nav>
+          </div>
         </div>
+        <PHBanner />
       </header>
 
       {/* Search Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pt-24">
         <div className="flex gap-2 sm:gap-3 max-w-xl">
           <div className="flex-1 glass rounded-xl overflow-hidden flex">
             <input
