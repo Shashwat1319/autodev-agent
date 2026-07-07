@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import PHBanner from '../components/PHBanner';
+import { getLangColor } from '../lib/lang-colors';
 
 const features = [
   { icon: '👁️', title: 'File Watcher', desc: 'Detects every change in real-time. No manual staging needed.' },
@@ -26,15 +27,6 @@ const stats = [
 ];
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://autodev-kappa.vercel.app';
-
-const langColors: Record<string, string> = {
-  JavaScript: '#f7df1e', TypeScript: '#3178c6', Python: '#3572A5',
-  HTML: '#e34c26', CSS: '#563d7c', Rust: '#dea584', Go: '#00ADD8',
-  Java: '#b07219', C: '#555555', 'C++': '#f34b7d', 'C#': '#178600',
-  Ruby: '#701516', PHP: '#4F5D95', Swift: '#F05138', Kotlin: '#A97BFF',
-  Dart: '#00B4AB', Lua: '#000080', Scala: '#c22d40', Shell: '#89e051',
-  Vue: '#4fc08d', Svelte: '#ff3e00', React: '#61dafb',
-};
 
 export default function Home() {
   const [username, setUsername] = useState('');
@@ -268,7 +260,7 @@ export default function Home() {
                 <div className="mb-4">
                   <div className="flex gap-1 h-2 mb-3 rounded-full overflow-hidden">
                     {result.languages.slice(0, 6).map((l: any) => (
-                      <div key={l.name} className="h-full rounded-full" style={{ width: `${l.percentage}%`, backgroundColor: langColors[l.name] || '#666' }} />
+                      <div key={l.name} className="h-full rounded-full" style={{ width: `${l.percentage}%`, backgroundColor: getLangColor(l.name) }} />
                     ))}
                   </div>
                   <div className="flex gap-3 flex-wrap">

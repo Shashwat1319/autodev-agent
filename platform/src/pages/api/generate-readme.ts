@@ -1,17 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { rateLimit } from '../../lib/rate-limit';
 import { calculateScore } from '../../lib/analyze-profile';
-
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
-const headers: Record<string, string> = { Accept: 'application/vnd.github.v3+json' };
-if (GITHUB_TOKEN) headers.Authorization = `Bearer ${GITHUB_TOKEN}`;
-
-async function fetchJSON(url: string) {
-  const res = await fetch(url, { headers });
-  if (res.status === 403) throw new Error('GitHub API rate limit exceeded. Try again later.');
-  if (!res.ok) return null;
-  return res.json();
-}
+import { fetchGitHubJSON, fetchUserAndRepos } from '../../shared/github-client';
+import { getLangColor } from '../../lib/lang-colors';
+import { getScoreShieldsColor } from '../../lib/score';
 
 function generateReadme(data: {
   username: string; avatar: string; name: string; bio: string;
@@ -30,7 +22,7 @@ function generateReadme(data: {
   <img src="https://img.shields.io/badge/Repos-${data.totalRepos}-blue?style=for-the-badge&logo=github&logoColor=white" />
   <img src="https://img.shields.io/badge/Stars-${data.totalStars}-yellow?style=for-the-badge&logo=star&logoColor=black" />
   <img src="https://img.shields.io/badge/Forks-${data.totalForks}-orange?style=for-the-badge&logo=git&logoColor=white" />
-  <img src="https://img.shields.io/badge/AutoDev%20Score-${data.score}-${getScoreColor(data.score)}?style=for-the-badge&logo=target&logoColor=white" />
+  <img src="https://img.shields.io/badge/AutoDev%20Score-${data.score}-${getScoreShieldsColor(data.score)}?style=for-the-badge&logo=target&logoColor=white" />
 </p>`;
 
   const langBadges = data.languages.length > 0
@@ -55,7 +47,7 @@ function generateReadme(data: {
     : '';
 
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://autodev-kappa.vercel.app';
-  const scoreBadge = `[![AutoDev Score](https://img.shields.io/badge/AutoDev%20Score-${data.score}/100-${getScoreColor(data.score)}?style=for-the-badge&logo=target&logoColor=white)](${BASE_URL}/dashboard?user=${data.username})`;
+  const scoreBadge = `[![AutoDev Score](https://img.shields.io/badge/AutoDev%20Score-${data.score}/100-${getScoreShieldsColor(data.score)}?style=for-the-badge&logo=target&logoColor=white)](${BASE_URL}/dashboard?user=${data.username})`;
 
   const aboutLines: string[] = [];
   if (data.bio && data.bio !== 'No bio') aboutLines.push(data.bio);
@@ -272,24 +264,6 @@ ${pinnedCards}
   return templates[style] || templates.professional;
 }
 
-function getLangColor(name: string): string {
-  const colors: Record<string, string> = {
-    JavaScript: '#f7df1e', TypeScript: '#3178c6', Python: '#3572A5',
-    HTML: '#e34c26', CSS: '#563d7c', Rust: '#dea584', Go: '#00ADD8',
-    Java: '#b07219', C: '#555555', 'C++': '#f34b7d', 'C#': '#178600',
-    Ruby: '#701516', PHP: '#4F5D95', Swift: '#F05138', Kotlin: '#A97BFF',
-    Dart: '#00B4AB', Lua: '#000080', Scala: '#c22d40', Shell: '#89e051',
-    Vue: '#4fc08d', Svelte: '#ff3e00', React: '#61dafb',
-  };
-  return colors[name] || '#666';
-}
-
-function getScoreColor(score: number): string {
-  if (score >= 70) return 'brightgreen';
-  if (score >= 40) return 'yellow';
-  return 'red';
-}
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.headers['x-real-ip']?.toString() || 'unknown';
   const rl = rateLimit({ key: `generate-readme:${ip}`, maxRequests: 20, windowMs: 60000 });
@@ -302,19 +276,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const [user, repos, events] = await Promise.all([
-      fetchJSON(`https://api.github.com/users/${username}`),
-      fetchJSON(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`),
-      fetchJSON(`https://api.github.com/users/${username}/events/public?per_page=30`),
-    ]);
-
+    const { user, repoList, totalStars, totalForks } = await fetchUserAndRepos(username);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const repoList = Array.isArray(repos) ? repos : [];
+    const events = await fetchGitHubJSON(`https://api.github.com/users/${username}/events/public?per_page=30`);
     const eventList = Array.isArray(events) ? events : [];
-
-    const totalStars = repoList.reduce((sum: number, r: any) => sum + (r.stargazers_count || 0), 0);
-    const totalForks = repoList.reduce((sum: number, r: any) => sum + (r.forks_count || 0), 0);
 
     const langMap: Record<string, number> = {};
     repoList.forEach((r: any) => { if (r.language) langMap[r.language] = (langMap[r.language] || 0) + 1; });

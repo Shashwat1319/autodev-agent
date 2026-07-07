@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { getApiUrl, getAuthToken } from '../config';
-import { AgentStatus, CommitEvent } from '../shared/types';
+import { AgentStatus, CommitEvent } from '../../../shared/types/index';
 
 export class CloudConnector {
   private socket: Socket | null = null;

@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import sharp from 'sharp';
 import { rateLimit } from '../../lib/rate-limit';
 import { analyzeProfile } from '../../lib/analyze-profile';
+import { getScoreHex } from '../../lib/score';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://autodev-kappa.vercel.app';
 
@@ -34,7 +35,7 @@ export default async function handler(
       score = analysis.overallScore || 0;
     }
 
-    const barColor = score >= 70 ? '#4caf50' : score >= 40 ? '#ff9800' : '#f44336';
+    const barColor = getScoreHex(score);
 
     const svg = `<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
       <defs>

@@ -3,7 +3,7 @@ import { loadConfig } from './config';
 import { FileWatcher } from './core/watcher';
 import { CloudConnector } from './core/cloud-connector';
 import { SyncQueue } from './core/sync-queue';
-import { CommitEvent, AgentStatus } from './shared/types';
+import { CommitEvent, AgentStatus } from '../../shared/types/index';
 
 console.log(`
   ╔══════════════════════════════════════╗

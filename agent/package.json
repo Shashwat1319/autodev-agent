@@ -2,9 +2,9 @@
   "name": "autodev-agent",
   "version": "0.1.3",
   "description": "Auto-pilot your git. Auto-commits and pushes your code + analyzes your GitHub profile.",
-  "main": "dist/index.js",
+  "main": "dist/agent/src/index.js",
   "bin": {
-    "autodev-agent": "dist/index.js"
+    "autodev-agent": "dist/agent/src/index.js"
   },
   "files": [
     "dist/",

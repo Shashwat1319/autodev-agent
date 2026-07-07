@@ -1,12 +1,5 @@
-import { ProfileAnalysis } from '../shared/types';
-
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
-
-function getHeaders(): Record<string, string> {
-  const headers: Record<string, string> = { Accept: 'application/vnd.github.v3+json' };
-  if (GITHUB_TOKEN) headers.Authorization = `Bearer ${GITHUB_TOKEN}`;
-  return headers;
-}
+import { ProfileAnalysis } from '../../../shared/types/index';
+import { fetchGitHubJSON, fetchUserAndRepos } from '../shared/github-client';
 
 export function calculateScore(data: {
   repoCount: number;
@@ -27,32 +20,14 @@ export function calculateScore(data: {
 }
 
 export async function analyzeProfile(username: string): Promise<ProfileAnalysis | null> {
-  const headers = getHeaders();
+  const { user, repos, repoList, totalStars, totalForks } = await fetchUserAndRepos(username);
+  if (!user) return null;
+  if (!repos) return null;
 
-  const [userRes, reposRes, eventsRes] = await Promise.all([
-    fetch(`https://api.github.com/users/${username}`, { headers }),
-    fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`, { headers }),
-    fetch(`https://api.github.com/users/${username}/events/public?per_page=100`, { headers }),
-  ]);
+  const events = await fetchGitHubJSON(`https://api.github.com/users/${username}/events/public?per_page=100`);
+  if (!events) return null;
 
-  if (!userRes.ok) {
-    if (userRes.status === 403) throw new Error('GitHub API rate limit exceeded. Try again later.');
-    return null;
-  }
-  if (!reposRes.ok || !eventsRes.ok) {
-    if (reposRes.status === 403 || eventsRes.status === 403) throw new Error('GitHub API rate limit exceeded. Try again later.');
-    return null;
-  }
-
-  const userData = await userRes.json();
-  const repos = await reposRes.json();
-  const events = await eventsRes.json();
-
-  const repoList = Array.isArray(repos) ? repos : [];
   const eventList = Array.isArray(events) ? events : [];
-
-  const totalStars = repoList.reduce((sum: number, r: any) => sum + (r.stargazers_count || 0), 0);
-  const totalForks = repoList.reduce((sum: number, r: any) => sum + (r.forks_count || 0), 0);
 
   const langMap: Record<string, number> = {};
   repoList.forEach((r: any) => {
@@ -86,25 +61,25 @@ export async function analyzeProfile(username: string): Promise<ProfileAnalysis 
     repoCount: repoList.length,
     totalStars,
     eventCount: eventList.length,
-    publicRepos: userData.public_repos,
-    hasBio: !!userData.bio,
+    publicRepos: user.public_repos,
+    hasBio: !!user.bio,
   });
 
   const hasDescriptions = repoList.some((r: any) => r.description && r.description.length > 20);
   const recommendations: string[] = [];
-  if (!userData.bio) recommendations.push('Add a bio to your GitHub profile');
-  if (!userData.blog) recommendations.push('Add a website/blog link to your profile');
+  if (!user.bio) recommendations.push('Add a bio to your GitHub profile');
+  if (!user.blog) recommendations.push('Add a website/blog link to your profile');
   if (repoList.filter((r: any) => !r.fork).length < 3) recommendations.push('Create more original repositories (not forks)');
   if (!hasDescriptions) recommendations.push('Add descriptions to your repositories');
   if (totalStars < 5) recommendations.push('Share your projects to get more stars');
   if (eventList.length < 10) recommendations.push('Be more active — commit more frequently');
 
   return {
-    username: userData.login,
-    avatar: userData.avatar_url,
-    bio: userData.bio || 'No bio',
-    location: userData.location || '',
-    totalRepos: userData.public_repos,
+    username: user.login,
+    avatar: user.avatar_url,
+    bio: user.bio || 'No bio',
+    location: user.location || '',
+    totalRepos: user.public_repos,
     totalStars,
     totalForks,
     totalContributions: repoVolume,

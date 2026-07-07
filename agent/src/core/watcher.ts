@@ -1,6 +1,6 @@
 import * as chokidar from 'chokidar';
 import * as path from 'path';
-import { AutoDevConfig } from '../shared/types';
+import { AutoDevConfig } from '../../../shared/types/index';
 import { GitEngine } from './git-engine';
 
 export class FileWatcher {

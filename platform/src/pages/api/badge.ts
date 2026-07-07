@@ -1,18 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { rateLimit } from '../../lib/rate-limit';
 import { analyzeProfile } from '../../lib/analyze-profile';
-
-function getColor(score: number): string {
-  if (score >= 70) return '#4caf50';
-  if (score >= 40) return '#ff9800';
-  return '#f44336';
-}
-
-function getLabel(score: number): string {
-  if (score >= 70) return 'Great';
-  if (score >= 40) return 'Okay';
-  return 'Needs Work';
-}
+import { getScoreHex, getScoreLabel } from '../../lib/score';
 
 function badgeSVG(label: string, score: number, color: string, labelColor: string) {
   const lw = label.length * 7.5 + 20;
@@ -63,8 +52,8 @@ export default async function handler(
       return res.status(200).setHeader('Content-Type', 'image/svg+xml').send(badgeSVG('User Not Found', 0, '#f44336', '#555'));
     }
 
-    const color = getColor(analysis.overallScore);
-    const label = `AutoDev ${getLabel(analysis.overallScore)}`;
+    const color = getScoreHex(analysis.overallScore);
+    const label = `AutoDev ${getScoreLabel(analysis.overallScore)}`;
 
     res.status(200).setHeader('Content-Type', 'image/svg+xml').setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate').send(badgeSVG(label, analysis.overallScore, color, '#555'));
   } catch {
