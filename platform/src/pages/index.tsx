@@ -193,7 +193,7 @@ export default function Home() {
             <div className="flex glass rounded-xl overflow-hidden glow w-full sm:w-auto mx-auto sm:mx-0">
               <input
                 type="text"
-                placeholder="Enter GitHub username..."
+                placeholder="Enter GitHub username to analyze..."
                 className="bg-transparent px-4 sm:px-5 py-3 sm:py-3.5 text-white w-full sm:w-64 outline-none text-sm"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
@@ -290,6 +290,39 @@ export default function Home() {
                   </ul>
                 </div>
               )}
+              <div className="mt-5 pt-4 border-t border-white/5">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 text-center">Share Your Score</p>
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                  <a
+                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${BASE_URL}/dashboard?user=${result.username}`)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="glass rounded-xl px-4 py-2.5 text-xs text-white hover:bg-white/[0.08] transition text-center font-medium"
+                    style={{ backgroundColor: '#0a66c2' }}
+                  >
+                    Share on LinkedIn
+                  </a>
+                  <a
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`My AutoDev score is ${result.overallScore}/100! Check yours →`)}&url=${encodeURIComponent(`${BASE_URL}/dashboard?user=${result.username}`)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="glass rounded-xl px-4 py-2.5 text-xs text-white hover:bg-white/[0.08] transition text-center font-medium"
+                    style={{ backgroundColor: '#000' }}
+                  >
+                    Share on 𝕏
+                  </a>
+                  <button
+                    onClick={() => {
+                      const text = `[![AutoDev Score](${BASE_URL}/api/badge?username=${result.username})](${BASE_URL}/dashboard?user=${result.username})`;
+                      navigator.clipboard.writeText(text).catch(() => {});
+                      const btn = document.getElementById('home-copy-badge');
+                      if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Copy Badge'; }, 2000); }
+                    }}
+                    id="home-copy-badge"
+                    className="glass rounded-xl px-4 py-2.5 text-xs text-cyan-400 hover:bg-white/[0.08] transition text-center font-medium"
+                  >
+                    Copy Badge
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -374,6 +407,36 @@ export default function Home() {
             >
               {badgeCopied ? 'Copied!' : 'Copy Badge Code'}
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Userscript */}
+      <section className="section-padding border-t border-white/5">
+        <div className="max-w-3xl mx-auto container-padding text-center">
+          <span className="text-xs font-semibold text-cyan-400 uppercase tracking-[0.2em]">Free Extension</span>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-3 mb-4">See Scores on GitHub Profiles</h2>
+          <p className="text-gray-400 mb-6 sm:mb-8 max-w-xl mx-auto">
+            Install the free userscript (no Chrome Web Store needed). Visit any GitHub profile — AutoDev score appears automatically.
+          </p>
+          <div className="glass rounded-2xl p-6 sm:p-8 max-w-lg mx-auto">
+            <div className="flex items-center gap-3 justify-center mb-4">
+              <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-lg font-bold text-black">A</span>
+              <span className="text-sm text-gray-300">AutoDev Score Userscript</span>
+            </div>
+            <p className="text-xs text-gray-500 mb-4">
+              1. Install <a href="https://www.tampermonkey.net" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Tampermonkey</a> extension (free)<br />
+              2. <a href="https://raw.githubusercontent.com/Shashwat1319/autodev-agent/main/autodev-github-score.user.js" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Click here</a> to install script<br />
+              3. Visit any GitHub profile → score appears
+            </p>
+            <a
+              href="https://raw.githubusercontent.com/Shashwat1319/autodev-agent/main/autodev-github-score.user.js"
+              target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Install Userscript
+            </a>
           </div>
         </div>
       </section>
