@@ -11,7 +11,7 @@
 ## What It Does
 
 ### 🤖 Local Agent (`npx autodev-agent`)
-Run in your terminal — watches files, auto-commits with smart debouncing, and auto-pushes to GitHub. No manual `git add`, `git commit`, or `git push` ever again.
+Run in your terminal — watches files, auto-commits with smart debouncing, and auto-pushes to GitHub. No manual `git add`, `git commit`, or `git push` ever again. **609+ npm downloads/week.**
 
 ### 🌐 Cloud Platform (autodev-kappa.vercel.app)
 | Tool | Description |
@@ -49,19 +49,32 @@ Add this to your GitHub profile README:
 ## Stack
 
 | Component | Tech |
-|---|---|
+|---|---|---|
 | Framework | Next.js 14 (Pages Router) |
 | Styling | Tailwind CSS + glassmorphism utilities |
 | Images | Sharp (SVG→PNG for OG images) |
 | Hosting | Vercel (free tier, auto-deploy from GitHub) |
 | Agent | Node.js CLI published on npm |
+| Chrome Extension | Shows AutoDev score on any GitHub profile |
 | Rate Limit | In-memory per-IP (no Redis) |
 | Analytics | @vercel/analytics |
+
+## Chrome Extension
+
+See any GitHub user's AutoDev score directly on their profile page.
+
+1. Download the extension from `chrome-extension/` folder
+2. Go to `chrome://extensions` → Developer mode → Load unpacked
+3. Select `chrome-extension/` directory
+4. Visit any GitHub profile — badge appears next to their name
+
+Or use the popup to analyze any username directly.
 
 ## Links
 
 - **Platform**: https://autodev-kappa.vercel.app
 - **Agent**: `npx autodev-agent` (npm: [autodev-agent](https://www.npmjs.com/package/autodev-agent))
+- **Chrome Extension**: `chrome-extension/` in this repo
 - **Source**: https://github.com/Shashwat1319/autodev-agent
 - **Support**: [Buy me a coffee](https://buymeacoffee.com/shashwatsrivastava)
 

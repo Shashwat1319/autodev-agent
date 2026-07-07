@@ -1,5 +1,8 @@
-# AutoDev Product Hunt Launch Kit
-**Launch Date:** Tomorrow (schedule for 12:01 AM PT)
+# AutoDev Launch Kit (Archived — Launched July 5, 2026)
+> Product Hunt: 8 upvotes, 6 comments, 25 site visitors
+> npm: 609 downloads/week
+> Status: Free tier, 0 revenue
+
 **Product URL:** https://autodev-kappa.vercel.app
 
 ---

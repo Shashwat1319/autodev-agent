@@ -1,24 +1,38 @@
 # AutoDev — Usage Guide
 
-## For You (The Developer / Owner)
+## Platform (Website)
 
-### Step 1: Start the Cloud Platform
+### Development
 ```bash
-cd D:\GithubRepo\autodev\platform
+cd platform
 npm run dev
+# Opens at http://localhost:3000
 ```
-- Opens at `http://localhost:3000`
-- Landing page with GitHub profile analyzer
-- Dashboard at `http://localhost:3000/dashboard`
 
-### Step 2: Configure the Local Agent
+### Build & Deploy
+```bash
+npm run build     # Production build
+vercel --prod     # Deploy to Vercel
+```
+
+---
+
+## Agent (CLI)
+
+### Install & Run
+```bash
+npx autodev-agent
+# No install needed — runs via npx
+```
+
+### Configure
 Create `~/.autodev/config.json`:
 ```json
 {
   "repos": [
     {
-      "localPath": "C:/Users/YOU/Projects/my-app",
-      "remoteUrl": "https://github.com/YOU/my-app.git",
+      "localPath": "/path/to/your/project",
+      "remoteUrl": "https://github.com/you/project.git",
       "branch": "main",
       "enabled": true
     }
@@ -32,85 +46,55 @@ Create `~/.autodev/config.json`:
 }
 ```
 
-### Step 3: Start the Agent
+### Dev Mode
 ```bash
-cd D:\GithubRepo\autodev\agent
+cd agent
 npm run dev
-```
-- Agent starts watching your configured repos
-- Any file change → auto-commits after 60s of inactivity → auto-pushes
-- Logs appear in terminal
-
-### Step 4: Analyze Any Profile
-Go to `http://localhost:3000`
-- Enter a GitHub username (anyone)
-- See their repos, stars, languages, consistency score
-- Get recommendations
-
----
-
-## For End Users (How They Would Use It)
-
-### Flow 1: "I want auto-git in the background"
-```
-1. Sign up at autodev.io with GitHub
-2. Download the AutoDev desktop agent
-3. Install & run — it sits in system tray
-4. Configure which folders to watch
-5. Done. Code normally. Agent auto-commits & pushes.
-6. Dashboard shows live activity feed
-```
-
-### Flow 2: "I want a recruiter-ready profile"
-```
-1. Enter your GitHub username on autodev.io
-2. AutoDev scans all your repos
-3. Get a scored report: "Your profile scores 72/100"
-4. Get personalized tips: "Add READMEs, contribute more"
-5. Get a shareable link: autodev.io/u/yourname
-6. Send this link to recruiters instead of raw GitHub
-```
-
-### Flow 3: "I want to check a candidate"
-```
-1. Recruiter enters candidate's GitHub username
-2. AutoDev generates:
-   - Total repos, stars, forks
-   - Language breakdown
-   - Contribution consistency score
-   - Top repos with quality scores
-   - Red flags & recommendations
-3. Recruiter exports as PDF report
+# Hot-reload with ts-node-dev
 ```
 
 ---
 
-## Example Workflow (You Testing Both)
+## Chrome Extension
 
-```bash
-Terminal 1: cd platform && npm run dev
-           → Platform running on :3000
+### Load Unpacked
+1. Open Chrome → `chrome://extensions`
+2. Enable Developer mode (top right)
+3. Click "Load unpacked" → select `chrome-extension/`
+4. Visit any GitHub profile — see AutoDev score badge next to their name
 
-Terminal 2: cd agent && npm run dev
-           → Agent watching your repos
+---
 
-# Now edit a file in your project
-echo "console.log('hello')" >> test.js
-# Wait 60 seconds...
-# Agent auto-commits: "auto: updated test.js"
-# Agent auto-pushes to GitHub
+## How End Users Use AutoDev
 
-# Open browser → http://localhost:3000
-# Enter your GitHub username → see your scored profile
+### Auto-Git Agent
+```
+npx autodev-agent → watches files → auto-commits (60s debounce) → auto-pushes
 ```
 
-## Project Structure Reference
+### Profile Analyzer
+```
+autodev-kappa.vercel.app → enter GitHub username → score/100 + languages + repos + consistency
+```
+
+### README Generator
+```
+autodev-kappa.vercel.app/readme-generator → pick style → preview → copy/download
+```
+
+**All free. No login. No signup. No database — live GitHub API.**
+
+---
+
+## Project Structure
 ```
 autodev/
-├── agent/          ← Desktop agent (local machine)
-├── platform/       ← Cloud dashboard (website)
-├── shared/         ← Common types
-├── IDEA_BANK.md    ← Saved future ideas
-├── USAGE.md        ← This file
-└── README.md       ← Project overview
+├── agent/              ← CLI agent (npm package)
+├── platform/           ← Next.js website (Vercel)
+├── chrome-extension/   ← Chrome extension
+├── shared/             ← Shared types
+├── README.md           ← Project overview
+├── USAGE.md            ← This file
+├── LAUNCH_KIT.md       ← Launch drafts (archived)
+└── IDEA_BANK.md        ← Future product ideas
 ```
