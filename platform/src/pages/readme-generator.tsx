@@ -1,5 +1,8 @@
 import Head from 'next/head';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import PHBanner from '../components/PHBanner';
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://autodev-kappa.vercel.app';
 
 const STYLES = [
   { id: 'professional', label: 'Professional', desc: 'Clean, well-structured with stats and activity' },
@@ -14,16 +17,23 @@ export default function ReadmeGenerator() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
+  useEffect(() => {
+    document.body.style.overflow = mobileMenu ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenu]);
 
-  const generatePreview = async () => {
+  const generatePreview = async (s?: string) => {
     const u = username.trim();
+    const activeStyle = s || style;
     if (!u) return;
+    if (s) setStyle(s);
     setLoading(true);
     setError('');
     setReadme('');
     setCopied(false);
     try {
-      const res = await fetch(`/api/generate-readme?username=${encodeURIComponent(u)}&style=${style}`);
+      const res = await fetch(`/api/generate-readme?username=${encodeURIComponent(u)}&style=${activeStyle}`);
       if (!res.ok) {
         const e = await res.json();
         throw new Error(e.error || 'Failed to generate README');
@@ -51,8 +61,12 @@ export default function ReadmeGenerator() {
       const a = document.createElement('a');
       a.href = url;
       a.download = `README-${u}.md`;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 1000);
     } catch {
       setError('Failed to download. Please try again.');
     }
@@ -60,7 +74,7 @@ export default function ReadmeGenerator() {
 
   const copyReadme = () => {
     if (!readme) return;
-    navigator.clipboard.writeText(readme);
+    navigator.clipboard.writeText(readme).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -68,27 +82,62 @@ export default function ReadmeGenerator() {
   return (
     <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Head>
-        <title>README Generator — AutoDev</title>
-        <meta name="description" content="Generate a beautiful GitHub profile README from your GitHub data — 100% free" />
+        <title>Free GitHub README Generator — 3 Professional Styles | AutoDev</title>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="canonical" href={`${BASE_URL}/readme-generator`} />
+        <meta name="description" content="Generate a free GitHub profile README from your public GitHub data. Three styles: Professional, Minimal, Recruiter. Preview, copy, or download. No sign-up." />
+        <meta name="keywords" content="free README generator, GitHub profile README, README template, GitHub README maker, profile README, developer portfolio README" />
+        <meta property="og:title" content="Free GitHub README Generator — 3 Professional Styles | AutoDev" />
+        <meta property="og:description" content="Generate a free GitHub profile README from your GitHub data. Three styles — Professional, Minimal, Recruiter. Preview, copy, or download." />
+        <meta property="og:image" content={`${BASE_URL}/api/og`} />
+        <meta property="og:url" content={`${BASE_URL}/readme-generator`} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Free GitHub README Generator — 3 Professional Styles | AutoDev" />
+        <meta name="twitter:description" content="Generate a free GitHub profile README from your GitHub data. Three styles — preview, copy, or download." />
+        <meta name="twitter:image" content={`${BASE_URL}/api/og`} />
       </Head>
 
-      <header className="glass border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-sm font-bold text-black group-hover:scale-105 transition">A</div>
-            <span className="text-lg font-bold"><span className="text-cyan-400">{'{'}</span>AutoDev<span className="text-cyan-400">{'}'}</span></span>
-            <span className="text-xs text-gray-500 ml-2 hidden sm:inline">README Generator</span>
-          </a>
-          <nav className="flex items-center gap-4">
-            <a href="/" className="text-xs text-gray-400 hover:text-white transition">Home</a>
-            <a href="/dashboard" className="text-xs text-gray-400 hover:text-white transition">Dashboard</a>
-            <a href="/leaderboard" className="text-xs text-gray-400 hover:text-white transition">Leaderboard</a>
-            <a href="/readme-generator" className="text-xs text-cyan-400 font-medium">README</a>
-          </nav>
+      <header className="fixed top-0 left-0 right-0 z-50">
+        <div className="glass border-b border-white/5">
+          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="/" className="flex items-center gap-2.5 group">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-sm font-bold text-black group-hover:scale-105 transition">A</div>
+              <span className="text-lg font-bold"><span className="text-cyan-400">{'{'}</span>AutoDev<span className="text-cyan-400">{'}'}</span></span>
+              <span className="text-xs text-gray-500 ml-2 hidden sm:inline">README Generator</span>
+            </a>
+            <nav className="hidden md:flex items-center gap-4">
+              <a href="/" className="text-xs text-gray-400 hover:text-white transition">Home</a>
+              <a href="/dashboard" className="text-xs text-gray-400 hover:text-white transition">Dashboard</a>
+              <a href="/leaderboard" className="text-xs text-gray-400 hover:text-white transition">Leaderboard</a>
+              <a href="/readme-generator" className="text-xs text-cyan-400 font-medium">README</a>
+            </nav>
+            <div className="md:hidden flex items-center">
+              <button onClick={() => setMobileMenu(!mobileMenu)} className="text-gray-400 hover:text-white transition p-1">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenu ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} /></svg>
+              </button>
+            </div>
+          </div>
         </div>
+        <PHBanner />
       </header>
 
-      <section className="py-12">
+      {/* Mobile Menu */}
+      {mobileMenu && (
+        <div className="fixed inset-0 z-50 md:hidden" onClick={() => setMobileMenu(false)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative glass rounded-b-2xl p-6 pt-28" onClick={e => e.stopPropagation()}>
+            <nav className="flex flex-col gap-4 text-center">
+              <a href="/" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Home</a>
+              <a href="/dashboard" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Dashboard</a>
+              <a href="/leaderboard" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Leaderboard</a>
+              <a href="/readme-generator" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">README Generator</a>
+            </nav>
+          </div>
+        </div>
+      )}
+
+      <section className="pt-28 sm:pt-36 pb-12">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-10">
             <span className="text-xs font-semibold text-cyan-400 uppercase tracking-[0.2em]">Free Tool</span>
@@ -112,7 +161,7 @@ export default function ReadmeGenerator() {
                 />
               </div>
               <button
-                onClick={generatePreview}
+                onClick={() => generatePreview()}
                 disabled={loading}
                 className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition disabled:opacity-50 text-sm"
               >
@@ -127,7 +176,7 @@ export default function ReadmeGenerator() {
             {STYLES.map(s => (
               <button
                 key={s.id}
-                onClick={() => { setStyle(s.id); if (readme) generatePreview(); }}
+                onClick={() => { if (readme) generatePreview(s.id); else setStyle(s.id); }}
                 className={`glass rounded-xl px-5 py-3 text-left transition text-sm min-w-[160px] ${style === s.id ? 'border-cyan-400/50 ring-1 ring-cyan-400/20' : 'hover:border-white/10'}`}
               >
                 <div className="font-medium text-white mb-0.5">{s.label}</div>
@@ -179,7 +228,7 @@ export default function ReadmeGenerator() {
       <footer className="border-t border-white/5 py-8 text-center text-xs text-gray-600">
         AutoDev · npx autodev-agent · MIT
         <br />
-        <a href="https://buymeacoffee.com/shashwatsrivastava" target="_blank" className="inline-flex items-center gap-1 mt-2 hover:text-amber-400 transition">☕ Buy me a coffee</a>
+        <a href="https://buymeacoffee.com/shashwatsrivastava" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-2 hover:text-amber-400 transition">☕ Buy me a coffee</a>
       </footer>
     </div>
   );

@@ -24,6 +24,7 @@ export default async function handler(
     const analysis = await analyzeProfile(username);
     if (!analysis) return res.status(404).json({ error: 'User not found' });
 
+    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
     res.status(200).json(analysis);
   } catch (err: any) {
     console.error('Analysis error:', err);

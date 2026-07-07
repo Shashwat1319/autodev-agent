@@ -7,7 +7,7 @@ export default function PHBanner() {
           We&apos;re live on{' '}
           <a
             href="https://www.producthunt.com/products/autodev-2"
-            target="_blank"
+            target="_blank" rel="noopener noreferrer"
             className="text-orange-400 font-semibold hover:text-orange-300 transition"
           >
             Product Hunt
@@ -16,7 +16,7 @@ export default function PHBanner() {
         </p>
         <a
           href="https://www.producthunt.com/products/autodev-2"
-          target="_blank"
+          target="_blank" rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition whitespace-nowrap"
         >
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-11H7v2h4v-2zm6 0h-4v2h4v-2z"/></svg>

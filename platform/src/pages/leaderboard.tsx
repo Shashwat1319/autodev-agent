@@ -1,5 +1,6 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import PHBanner from '../components/PHBanner';
 
 const rankColors = ['#ffd700', '#c0c0c0', '#cd7f32'];
 
@@ -10,18 +11,31 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState('');
   const [adding, setAdding] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
+  useEffect(() => {
+    document.body.style.overflow = mobileMenu ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenu]);
+  const fetchIdRef = useRef(0);
 
   const fetchLeaderboard = async (extra?: string) => {
+    const token = ++fetchIdRef.current;
     setLoading(true);
     try {
-      const q = extra ? `&q=${encodeURIComponent(extra)}` : '';
+      const q = extra ? `?q=${encodeURIComponent(extra)}` : '';
       const res = await fetch(`/api/leaderboard${q}`);
       if (res.ok) {
         const data = await res.json();
-        setEntries(data.leaderboard || []);
+        if (token === fetchIdRef.current) {
+          setEntries(data.leaderboard || []);
+        }
       }
-    } catch {}
-    setLoading(false);
+    } catch (e) {
+      console.error('Leaderboard fetch error:', e);
+    }
+    if (token === fetchIdRef.current) {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -40,32 +54,64 @@ export default function Leaderboard() {
   return (
     <div className="min-h-screen bg-[#0a0f1e] text-white">
       <Head>
-        <title>Leaderboard — AutoDev</title>
-        <meta property="og:title" content="AutoDev Leaderboard — Top GitHub Profiles" />
-        <meta property="og:description" content="Ranked by AutoDev score. Find your rank." />
+        <title>GitHub Profile Leaderboard — Top Developers Ranked | AutoDev</title>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="canonical" href={`${BASE_URL}/leaderboard`} />
+        <meta name="description" content="Top GitHub profiles ranked by AutoDev score. Find your rank, compare with other developers, and improve your GitHub presence for free." />
+        <meta name="keywords" content="GitHub leaderboard, top GitHub developers, GitHub profile ranking, developer score, compare GitHub profiles" />
+        <meta property="og:title" content="GitHub Profile Leaderboard — Top Developers Ranked | AutoDev" />
+        <meta property="og:description" content="Top GitHub profiles ranked by AutoDev score. Find your rank and compare with other developers for free." />
         <meta property="og:image" content={`${BASE_URL}/api/og?username=torvalds`} />
         <meta property="og:url" content={`${BASE_URL}/leaderboard`} />
+        <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="GitHub Profile Leaderboard — Top Developers Ranked | AutoDev" />
+        <meta name="twitter:description" content="Top GitHub profiles ranked by AutoDev score. Find your rank for free." />
+        <meta name="twitter:image" content={`${BASE_URL}/api/og?username=torvalds`} />
       </Head>
 
       {/* Nav */}
-      <header className="glass border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-sm font-bold text-black group-hover:scale-105 transition">A</div>
-            <span className="text-lg font-bold"><span className="text-cyan-400">{'{'}</span>AutoDev<span className="text-cyan-400">{'}'}</span></span>
-          </a>
-          <nav className="flex items-center gap-4">
-            <a href="/" className="text-xs text-gray-400 hover:text-white transition">Home</a>
-            <a href="/dashboard" className="text-xs text-gray-400 hover:text-white transition">Dashboard</a>
-            <a href="/readme-generator" className="text-xs text-gray-400 hover:text-white transition">README</a>
-            <a href="/leaderboard" className="text-xs text-cyan-400 font-medium">Leaderboard</a>
-          </nav>
+      <header className="fixed top-0 left-0 right-0 z-50">
+        <div className="glass border-b border-white/5">
+          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="/" className="flex items-center gap-2.5 group">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-sm font-bold text-black group-hover:scale-105 transition">A</div>
+              <span className="text-lg font-bold"><span className="text-cyan-400">{'{'}</span>AutoDev<span className="text-cyan-400">{'}'}</span></span>
+              <span className="text-xs text-gray-500 ml-2 hidden sm:inline">Leaderboard</span>
+            </a>
+            <nav className="hidden md:flex items-center gap-4">
+              <a href="/" className="text-xs text-gray-400 hover:text-white transition">Home</a>
+              <a href="/dashboard" className="text-xs text-gray-400 hover:text-white transition">Dashboard</a>
+              <a href="/readme-generator" className="text-xs text-gray-400 hover:text-white transition">README</a>
+              <a href="/leaderboard" className="text-xs text-cyan-400 font-medium">Leaderboard</a>
+            </nav>
+            <div className="md:hidden flex items-center">
+              <button onClick={() => setMobileMenu(!mobileMenu)} className="text-gray-400 hover:text-white transition p-1">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenu ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} /></svg>
+              </button>
+            </div>
+          </div>
         </div>
+        <PHBanner />
       </header>
 
+      {/* Mobile Menu */}
+      {mobileMenu && (
+        <div className="fixed inset-0 z-50 md:hidden" onClick={() => setMobileMenu(false)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative glass rounded-b-2xl p-6 pt-28" onClick={e => e.stopPropagation()}>
+            <nav className="flex flex-col gap-4 text-center">
+              <a href="/" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Home</a>
+              <a href="/dashboard" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Dashboard</a>
+              <a href="/readme-generator" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">README Generator</a>
+              <a href="/leaderboard" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Leaderboard</a>
+            </nav>
+          </div>
+        </div>
+      )}
+
       {/* Hero */}
-      <section className="py-16 text-center">
+      <section className="pt-28 sm:pt-36 pb-16 text-center">
         <div className="max-w-3xl mx-auto px-6">
           <span className="text-xs font-semibold text-cyan-400 uppercase tracking-[0.2em]">Rankings</span>
           <h1 className="text-4xl font-bold mt-3 mb-4">Top GitHub Profiles</h1>
@@ -119,7 +165,7 @@ export default function Leaderboard() {
                   </div>
 
                   {/* Avatar */}
-                  <img src={e.avatar} className="w-10 h-10 rounded-full ring-2 ring-white/10 flex-shrink-0" />
+                  <img src={e.avatar} alt={`${e.username}'s avatar`} className="w-10 h-10 rounded-full ring-2 ring-white/10 flex-shrink-0" />
 
                   {/* Name */}
                   <div className="flex-1 min-w-0">
@@ -167,7 +213,7 @@ export default function Leaderboard() {
       <footer className="border-t border-white/5 py-8 text-center text-xs text-gray-600">
         AutoDev · npx autodev-agent · MIT
         <br />
-        <a href="https://buymeacoffee.com/shashwatsrivastava" target="_blank" className="inline-flex items-center gap-1 mt-2 hover:text-amber-400 transition">☕ Buy me a coffee</a>
+        <a href="https://buymeacoffee.com/shashwatsrivastava" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-2 hover:text-amber-400 transition">☕ Buy me a coffee</a>
       </footer>
     </div>
   );

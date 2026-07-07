@@ -43,15 +43,13 @@ function badgeSVG(label: string, score: number, color: string, labelColor: strin
 </svg>`;
 }
 
-const SVG_HEADERS = { 'Content-Type': 'image/svg+xml', 'Cache-Control': 's-maxage=3600, stale-while-revalidate' };
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.headers['x-real-ip']?.toString() || 'unknown';
   const rl = rateLimit({ key: `badge:${ip}`, maxRequests: 60, windowMs: 60000 });
-  if (!rl.allowed) return res.status(429).setHeader('Content-Type', 'image/svg+xml').send(badgeSVG('Rate Limited', 0, '#f44336', '#555'));
+  if (!rl.allowed) return res.status(200).setHeader('Content-Type', 'image/svg+xml').send(badgeSVG('Rate Limited', 0, '#f44336', '#555'));
 
   const { username } = req.query;
 

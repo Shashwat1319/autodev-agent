@@ -8,8 +8,6 @@ const FEATURED = [
   'prakhar1989', 'kamranahmedse', 'nikhilkalburgi',
 ];
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://autodev-kappa.vercel.app');
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

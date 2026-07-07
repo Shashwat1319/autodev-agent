@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PHBanner from '../components/PHBanner';
 
 const features = [
@@ -33,7 +33,7 @@ const langColors: Record<string, string> = {
   Java: '#b07219', C: '#555555', 'C++': '#f34b7d', 'C#': '#178600',
   Ruby: '#701516', PHP: '#4F5D95', Swift: '#F05138', Kotlin: '#A97BFF',
   Dart: '#00B4AB', Lua: '#000080', Scala: '#c22d40', Shell: '#89e051',
-  Vue: '#4fc08d', Svelte: '#ff3e00',
+  Vue: '#4fc08d', Svelte: '#ff3e00', React: '#61dafb',
 };
 
 export default function Home() {
@@ -41,6 +41,14 @@ export default function Home() {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
+  const [mobileMenu, setMobileMenu] = useState(false);
+  const [npxCopied, setNpxCopied] = useState(false);
+  const [badgeCopied, setBadgeCopied] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileMenu ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenu]);
 
   const analyzeProfile = async () => {
     const u = username.trim();
@@ -49,7 +57,7 @@ export default function Home() {
     setError('');
     setResult(null);
     try {
-      const res = await fetch(`/api/analyze?username=${u}`);
+      const res = await fetch(`/api/analyze?username=${encodeURIComponent(u)}`);
       if (!res.ok) {
         const e = await res.json();
         throw new Error(e.error || 'Failed to analyze');
@@ -65,8 +73,44 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#0a0f1e] text-white overflow-x-hidden">
       <Head>
-        <title>AutoDev — Your Code. Auto-Piloted.</title>
-        <meta name="description" content="Auto-commit, auto-push, auto-analyze your GitHub profile" />
+        <title>AutoDev — Free GitHub Profile Analyzer & README Generator</title>
+        <meta name="google-site-verification" content="z_Jfvg1FTwpf58LlPaqSpGyUj0Kurbzd1o2_HRdTxfA" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="canonical" href={BASE_URL} />
+        <meta name="description" content="AutoDev is a free GitHub profile analyzer and README generator. Auto-commit, auto-push, and analyze your GitHub profile score. npx autodev-agent." />
+        <meta name="keywords" content="GitHub profile analyzer, GitHub profile score, free README generator, auto commit, git automation, developer portfolio, GitHub stats" />
+        <meta property="og:title" content="AutoDev — Free GitHub Profile Analyzer & README Generator" />
+        <meta property="og:description" content="Auto-commit, auto-push, auto-analyze your GitHub profile for free. Get your GitHub score, badges, and recruiter-ready README." />
+        <meta property="og:image" content={`${BASE_URL}/api/og`} />
+        <meta property="og:url" content={BASE_URL} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="AutoDev — Free GitHub Profile Analyzer & README Generator" />
+        <meta name="twitter:description" content="Auto-commit, auto-push, auto-analyze your GitHub profile for free. Get your GitHub score, badges, and recruiter-ready README." />
+        <meta name="twitter:image" content={`${BASE_URL}/api/og`} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'SoftwareApplication',
+              name: 'AutoDev',
+              applicationCategory: 'DeveloperApplication',
+              operatingSystem: 'Windows, macOS, Linux',
+              description: 'Free GitHub profile analyzer and README generator. Auto-commits and auto-pushes code with real-time profile analysis.',
+              url: BASE_URL,
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD',
+              },
+              author: {
+                '@type': 'Person',
+                name: 'Shashwat Srivastava',
+              },
+            }),
+          }}
+        />
       </Head>
 
       {/* Nav */}
@@ -89,22 +133,41 @@ export default function Home() {
               <a href="/readme-generator" className="text-gray-400 hover:text-white transition">README</a>
               <a
                 href="https://github.com/Shashwat1319/autodev-agent"
-                target="_blank"
+                target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-gray-400 hover:text-white transition"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
                 GitHub
               </a>
             </nav>
-            <div className="md:hidden">
-              <a href="https://github.com/Shashwat1319/autodev-agent" target="_blank" className="text-gray-400 hover:text-white transition">
+            <div className="md:hidden flex items-center gap-2">
+              <a href="https://github.com/Shashwat1319/autodev-agent" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
               </a>
+              <button onClick={() => setMobileMenu(!mobileMenu)} className="text-gray-400 hover:text-white transition p-1">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenu ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} /></svg>
+              </button>
             </div>
           </div>
         </div>
         <PHBanner />
       </header>
+
+      {/* Mobile Menu */}
+      {mobileMenu && (
+        <div className="fixed inset-0 z-50 md:hidden" onClick={() => setMobileMenu(false)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative glass rounded-b-2xl p-6 pt-28" onClick={e => e.stopPropagation()}>
+            <nav className="flex flex-col gap-4 text-center">
+              <a href="#features" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Features</a>
+              <a href="#how-it-works" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">How it Works</a>
+              <a href="/dashboard" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Dashboard</a>
+              <a href="/leaderboard" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Leaderboard</a>
+              <a href="/readme-generator" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">README Generator</a>
+            </nav>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="relative pt-28 sm:pt-36 pb-12 sm:pb-20 overflow-hidden">
@@ -114,7 +177,7 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-sm text-cyan-300 mb-6 sm:mb-8 animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse-slow" />
-            v0.1.2 — npx autodev-agent
+            v0.1.0 — npx autodev-agent
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight animate-slide-up text-balance">
             Your Code.<br />
@@ -131,7 +194,7 @@ export default function Home() {
               <input
                 type="text"
                 placeholder="Enter GitHub username..."
-                className="bg-transparent px-4 sm:px-5 py-3 sm:py-3.5 text-white w-full sm:w-56 sm:w-64 outline-none text-sm"
+                className="bg-transparent px-4 sm:px-5 py-3 sm:py-3.5 text-white w-full sm:w-64 outline-none text-sm"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && analyzeProfile()}
@@ -174,7 +237,7 @@ export default function Home() {
           {result && (
             <div className="mt-8 glass rounded-2xl p-8 max-w-3xl mx-auto text-left animate-slide-up glow">
               <div className="flex items-center gap-5 mb-6">
-                <img src={result.avatar} className="w-16 h-16 rounded-full ring-2 ring-cyan-400/50" />
+                <img src={result.avatar} alt={`${result.username}'s avatar`} className="w-16 h-16 rounded-full ring-2 ring-cyan-400/50" />
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <h2 className="text-2xl font-bold text-white">{result.username}</h2>
@@ -193,7 +256,7 @@ export default function Home() {
                   ['Repositories', result.totalRepos],
                   ['Stars', result.totalStars],
                   ['Forks', result.totalForks],
-                  ['Contributions', result.totalContributions],
+                  ['Repo Volume', result.totalContributions],
                 ].map(([label, value]) => (
                   <div key={label as string} className="bg-white/5 rounded-xl p-3 text-center">
                     <div className="text-lg font-bold text-white">{value}</div>
@@ -274,10 +337,10 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 glass rounded-xl px-4 sm:px-6 py-3">
               <code className="text-cyan-400 text-sm font-mono">$ npx autodev-agent</code>
               <button
-                onClick={() => navigator.clipboard.writeText('npx autodev-agent')}
-                className="text-gray-500 hover:text-white transition text-xs"
+                onClick={() => { navigator.clipboard.writeText('npx autodev-agent').catch(() => {}); setNpxCopied(true); setTimeout(() => setNpxCopied(false), 2000); }}
+                className="text-gray-500 hover:text-white transition text-xs min-w-[36px] text-left"
               >
-                Copy
+                {npxCopied ? 'Copied!' : 'Copy'}
               </button>
             </div>
           </div>
@@ -303,11 +366,13 @@ export default function Home() {
             </div>
             <button
               onClick={() => {
-                navigator.clipboard.writeText(`[![AutoDev Score](${BASE_URL}/api/badge?username=YOUR_USERNAME)](${BASE_URL}/dashboard?user=YOUR_USERNAME)`);
+                navigator.clipboard.writeText(`[![AutoDev Score](${BASE_URL}/api/badge?username=YOUR_USERNAME)](${BASE_URL}/dashboard?user=YOUR_USERNAME)`).catch(() => {});
+                setBadgeCopied(true);
+                setTimeout(() => setBadgeCopied(false), 2000);
               }}
               className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl transition text-sm"
             >
-              Copy Badge Code
+              {badgeCopied ? 'Copied!' : 'Copy Badge Code'}
             </button>
           </div>
         </div>
@@ -324,7 +389,7 @@ export default function Home() {
               Open Dashboard
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
             </a>
-            <a href="https://github.com/Shashwat1319/autodev-agent" target="_blank" className="inline-flex items-center gap-2 glass text-gray-300 px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl hover:bg-white/[0.08] transition whitespace-nowrap">
+            <a href="https://github.com/Shashwat1319/autodev-agent" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 glass text-gray-300 px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl hover:bg-white/[0.08] transition whitespace-nowrap">
               View on GitHub
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
             </a>
@@ -336,7 +401,7 @@ export default function Home() {
       <section className="section-padding border-t border-white/5">
         <div className="text-center">
           <p className="text-xs text-gray-500 mb-3">Support the project</p>
-          <a href="https://buymeacoffee.com/shashwatsrivastava" target="_blank"
+          <a href="https://buymeacoffee.com/shashwatsrivastava" target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 glass rounded-xl px-4 sm:px-6 py-3 text-sm text-gray-300 hover:bg-white/[0.08] transition hover:border-amber-400/30 group">
             <span className="text-lg">☕</span>
             <span>Buy me a coffee</span>

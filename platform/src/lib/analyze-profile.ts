@@ -8,6 +8,24 @@ function getHeaders(): Record<string, string> {
   return headers;
 }
 
+export function calculateScore(data: {
+  repoCount: number;
+  totalStars: number;
+  eventCount: number;
+  publicRepos: number;
+  hasBio: boolean;
+}): { consistencyScore: number; overallScore: number } {
+  const consistencyScore = Math.min(100, Math.round(
+    (data.repoCount > 0 ? 30 : 0) +
+    (data.totalStars > 0 ? 20 : 0) +
+    (data.eventCount > 10 ? 25 : data.eventCount > 0 ? 10 : 0) +
+    (data.publicRepos > 5 ? 15 : 5) +
+    (data.hasBio ? 10 : 0)
+  ));
+  const overallScore = Math.round((consistencyScore + Math.min(100, data.totalStars * 2)) / 2);
+  return { consistencyScore, overallScore };
+}
+
 export async function analyzeProfile(username: string): Promise<ProfileAnalysis | null> {
   const headers = getHeaders();
 
@@ -17,8 +35,14 @@ export async function analyzeProfile(username: string): Promise<ProfileAnalysis 
     fetch(`https://api.github.com/users/${username}/events/public?per_page=100`, { headers }),
   ]);
 
-  if (!userRes.ok) return null;
-  if (!reposRes.ok || !eventsRes.ok) return null;
+  if (!userRes.ok) {
+    if (userRes.status === 403) throw new Error('GitHub API rate limit exceeded. Try again later.');
+    return null;
+  }
+  if (!reposRes.ok || !eventsRes.ok) {
+    if (reposRes.status === 403 || eventsRes.status === 403) throw new Error('GitHub API rate limit exceeded. Try again later.');
+    return null;
+  }
 
   const userData = await userRes.json();
   const repos = await reposRes.json();
@@ -37,8 +61,7 @@ export async function analyzeProfile(username: string): Promise<ProfileAnalysis 
   const totalLangs = Object.values(langMap).reduce((a: number, b: number) => a + b, 0);
   const languages = Object.entries(langMap)
     .map(([name, count]) => ({ name, percentage: Math.round((count / totalLangs) * 100) }))
-    .sort((a, b) => b.percentage - a.percentage)
-    .slice(0, 8);
+    .sort((a, b) => b.percentage - a.percentage);
 
   const topRepos = repoList
     .filter((r: any) => !r.fork)
@@ -54,25 +77,25 @@ export async function analyzeProfile(username: string): Promise<ProfileAnalysis 
         (r.stargazers_count * 10) + (r.forks_count * 5) + (r.description ? 10 : 0) + ((r.topics?.length || 0) * 5)
       )),
       strengths: r.description ? ['Has description'] : [],
-      weaknesses: !r.description ? ['No README / description'] : [],
+      weaknesses: !r.description ? ['No description'] : [],
     }));
 
-  const totalContributions = Math.round(repoList.reduce((sum: number, r: any) => sum + (r.size || 0), 0) / 100);
+  const repoVolume = Math.round(repoList.reduce((sum: number, r: any) => sum + (r.size || 0), 0) / 100);
 
-  const consistencyScore = Math.min(100, Math.round(
-    (repoList.length > 0 ? 30 : 0) +
-    (totalStars > 0 ? 20 : 0) +
-    (eventList.length > 10 ? 25 : eventList.length > 0 ? 10 : 0) +
-    (userData.public_repos > 5 ? 15 : 5) +
-    (userData.bio ? 10 : 0)
-  ));
+  const { consistencyScore, overallScore } = calculateScore({
+    repoCount: repoList.length,
+    totalStars,
+    eventCount: eventList.length,
+    publicRepos: userData.public_repos,
+    hasBio: !!userData.bio,
+  });
 
-  const hasReadme = repoList.some((r: any) => r.description && r.description.length > 20);
+  const hasDescriptions = repoList.some((r: any) => r.description && r.description.length > 20);
   const recommendations: string[] = [];
   if (!userData.bio) recommendations.push('Add a bio to your GitHub profile');
   if (!userData.blog) recommendations.push('Add a website/blog link to your profile');
   if (repoList.filter((r: any) => !r.fork).length < 3) recommendations.push('Create more original repositories (not forks)');
-  if (!hasReadme) recommendations.push('Add README files to your repositories');
+  if (!hasDescriptions) recommendations.push('Add descriptions to your repositories');
   if (totalStars < 5) recommendations.push('Share your projects to get more stars');
   if (eventList.length < 10) recommendations.push('Be more active — commit more frequently');
 
@@ -80,15 +103,15 @@ export async function analyzeProfile(username: string): Promise<ProfileAnalysis 
     username: userData.login,
     avatar: userData.avatar_url,
     bio: userData.bio || 'No bio',
-    location: userData.location || 'Unknown',
+    location: userData.location || '',
     totalRepos: userData.public_repos,
     totalStars,
     totalForks,
-    totalContributions,
+    totalContributions: repoVolume,
     languages,
     topRepos,
     consistencyScore,
-    overallScore: Math.round((consistencyScore + Math.min(100, totalStars * 2)) / 2),
+    overallScore,
     recommendations,
   };
 }
