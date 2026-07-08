@@ -19,14 +19,6 @@ export function loadConfig(): AutoDevConfig {
   return getDefaultConfig();
 }
 
-export function saveConfig(config: AutoDevConfig): void {
-  const dir = path.dirname(CONFIG_PATH);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
-}
-
 function getDefaultConfig(): AutoDevConfig {
   return {
     repos: [],

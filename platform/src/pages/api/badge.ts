@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { rateLimit } from '../../lib/rate-limit';
+import { rateLimit, validateUsername } from '../../lib/api-utils';
 import { analyzeProfile } from '../../lib/analyze-profile';
-import { getScoreHex, getScoreLabel } from '../../lib/score';
-import { validateUsername } from '../../lib/validation';
+import { getScoreHex, getScoreLabel } from '../../lib/format';
 
 function badgeSVG(label: string, score: number, color: string, labelColor: string) {
   const lw = label.length * 7.5 + 20;

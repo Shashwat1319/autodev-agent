@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { rateLimit } from '../../lib/rate-limit';
+import { rateLimit, validateUsername } from '../../lib/api-utils';
 import { analyzeProfile } from '../../lib/analyze-profile';
-import { validateUsername } from '../../lib/validation';
 
 const FEATURED = [
   'torvalds', 'gaearon', 'sindresorhus', 'tj', 'Shashwat1319',

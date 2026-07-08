@@ -1,11 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { rateLimit } from '../../lib/rate-limit';
+import { rateLimit, validateUsername } from '../../lib/api-utils';
 import { calculateScore } from '../../lib/analyze-profile';
 import { fetchGitHubJSON, fetchUserAndRepos } from '../../shared/github-client';
-import { getLangColor } from '../../lib/lang-colors';
-import { getScoreShieldsColor } from '../../lib/score';
+import { getLangColor, getScoreShieldsColor } from '../../lib/format';
 import { BASE_URL } from '../../lib/config';
-import { validateUsername } from '../../lib/validation';
 
 function generateReadme(data: {
   username: string; avatar: string; name: string; bio: string;

@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
-import PHBanner from '../components/PHBanner';
-import { getLangColor } from '../lib/lang-colors';
+import { getLangColor } from '../lib/format';
+import Layout from '../components/Layout';
 
 const features = [
   { icon: '👁️', title: 'File Watcher', desc: 'Detects every change in real-time. No manual staging needed.' },
@@ -33,14 +33,8 @@ export default function Home() {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
-  const [mobileMenu, setMobileMenu] = useState(false);
   const [npxCopied, setNpxCopied] = useState(false);
   const [badgeCopied, setBadgeCopied] = useState(false);
-
-  useEffect(() => {
-    document.body.style.overflow = mobileMenu ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [mobileMenu]);
 
   const analyzeProfile = async () => {
     const u = username.trim();
@@ -63,7 +57,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white overflow-x-hidden">
+    <>
       <Head>
         <title>AutoDev — Free GitHub Profile Analyzer & README Generator</title>
         <meta name="google-site-verification" content="z_Jfvg1FTwpf58LlPaqSpGyUj0Kurbzd1o2_HRdTxfA" />
@@ -105,61 +99,7 @@ export default function Home() {
         />
       </Head>
 
-      {/* Nav */}
-      <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="glass border-b border-white/5">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-            <a href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-sm font-bold text-black group-hover:scale-105 transition">
-                A
-              </div>
-              <span className="text-lg font-bold">
-                <span className="text-cyan-400">{'{'}</span>AutoDev<span className="text-cyan-400">{'}'}</span>
-              </span>
-            </a>
-            <nav className="hidden md:flex items-center gap-6 sm:gap-8 text-sm">
-              <a href="#features" className="text-gray-400 hover:text-white transition">Features</a>
-              <a href="#how-it-works" className="text-gray-400 hover:text-white transition">How it Works</a>
-              <a href="/dashboard" className="text-gray-400 hover:text-white transition">Dashboard</a>
-              <a href="/leaderboard" className="text-gray-400 hover:text-white transition">Leaderboard</a>
-              <a href="/readme-generator" className="text-gray-400 hover:text-white transition">README</a>
-              <a
-                href="https://github.com/Shashwat1319/autodev-agent"
-                target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-gray-400 hover:text-white transition"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                GitHub
-              </a>
-            </nav>
-            <div className="md:hidden flex items-center gap-2">
-              <a href="https://github.com/Shashwat1319/autodev-agent" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-              </a>
-              <button onClick={() => setMobileMenu(!mobileMenu)} className="text-gray-400 hover:text-white transition p-1">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenu ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} /></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-        <PHBanner />
-      </header>
-
-      {/* Mobile Menu */}
-      {mobileMenu && (
-        <div className="fixed inset-0 z-50 md:hidden" onClick={() => setMobileMenu(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative glass rounded-b-2xl p-6 pt-28" onClick={e => e.stopPropagation()}>
-            <nav className="flex flex-col gap-4 text-center">
-              <a href="#features" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Features</a>
-              <a href="#how-it-works" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">How it Works</a>
-              <a href="/dashboard" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Dashboard</a>
-              <a href="/leaderboard" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Leaderboard</a>
-              <a href="/readme-generator" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">README Generator</a>
-            </nav>
-          </div>
-        </div>
-      )}
+      <Layout currentPage="/" showHomeLinks>
 
       {/* Hero */}
       <section className="relative pt-28 sm:pt-36 pb-12 sm:pb-20 overflow-hidden">
@@ -482,6 +422,7 @@ export default function Home() {
           <div className="text-xs text-gray-600">npx autodev-agent</div>
         </div>
       </footer>
-    </div>
+      </Layout>
+    </>
   );
 }

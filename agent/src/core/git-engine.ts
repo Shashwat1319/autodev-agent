@@ -20,18 +20,4 @@ export class GitEngine {
     return hash;
   }
 
-  async pull(repoPath: string): Promise<void> {
-    const git = simpleGit.simpleGit(repoPath);
-    await git.pull();
-  }
-
-  async status(repoPath: string): Promise<simpleGit.StatusResult> {
-    const git = simpleGit.simpleGit(repoPath);
-    return git.status();
-  }
-
-  async log(repoPath: string, maxCount: number = 10): Promise<simpleGit.LogResult> {
-    const git = simpleGit.simpleGit(repoPath);
-    return git.log({ maxCount });
-  }
 }

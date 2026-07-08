@@ -51,9 +51,4 @@ export interface RepoAnalysis {
   weaknesses: string[];
 }
 
-export interface UserSession {
-  id: string;
-  githubUsername: string;
-  accessToken: string;
-  plan: 'free' | 'pro' | 'team';
-}
+

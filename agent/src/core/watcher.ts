@@ -126,7 +126,7 @@ export class FileWatcher {
   private getRelativePath(filePath: string): string {
     for (const repo of this.config.repos) {
       if (filePath.startsWith(repo.localPath)) {
-        return filePath;
+        return filePath.slice(repo.localPath.length).replace(/^[\\/]/, '');
       }
     }
     return filePath;

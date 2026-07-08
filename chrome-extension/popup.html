@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoDev Score</title>
+<style>
 body {
   margin: 0;
   padding: 16px;
@@ -6,147 +13,68 @@ body {
   background: #0a0f1e;
   color: #fff;
 }
-
-.container {
-  text-align: center;
-}
-
+.container { text-align: center; }
 .logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 48px; height: 48px; border-radius: 12px;
   background: linear-gradient(135deg, #06b6d4, #2563eb);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 12px;
-  font-size: 22px;
-  font-weight: 800;
-  color: #000;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 12px; font-size: 22px; font-weight: 800; color: #000;
 }
-
-h1 {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 0 0 4px;
-  color: #fff;
-}
-
-.subtitle {
-  font-size: 12px;
-  color: #9ca3af;
-  margin: 0 0 16px;
-}
-
-.input-group {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
+h1 { font-size: 18px; font-weight: 700; margin: 0 0 4px; color: #fff; }
+.subtitle { font-size: 12px; color: #9ca3af; margin: 0 0 16px; }
+.input-group { display: flex; gap: 6px; margin-bottom: 12px; }
 .input-group input {
-  flex: 1;
-  padding: 8px 12px;
-  border-radius: 8px;
+  flex: 1; padding: 8px 12px; border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.05);
-  color: #fff;
-  font-size: 12px;
-  outline: none;
+  background: rgba(255,255,255,0.05); color: #fff; font-size: 12px; outline: none;
 }
-
-.input-group input::placeholder {
-  color: #6b7280;
-}
-
-.input-group input:focus {
-  border-color: #06b6d4;
-}
-
+.input-group input::placeholder { color: #6b7280; }
+.input-group input:focus { border-color: #06b6d4; }
 .btn {
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: none;
+  padding: 8px 14px; border-radius: 8px; border: none;
   background: linear-gradient(135deg, #06b6d4, #2563eb);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.2s;
+  color: #fff; font-size: 12px; font-weight: 600; cursor: pointer;
 }
-
-.btn:hover {
-  opacity: 0.85;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
+.btn:hover { opacity: 0.85; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .result {
-  margin-top: 12px;
-  padding: 12px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  margin-top: 12px; padding: 12px; border-radius: 10px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
 }
-
 .score {
-  font-size: 28px;
-  font-weight: 800;
+  font-size: 28px; font-weight: 800;
   background: linear-gradient(135deg, #06b6d4, #2563eb);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
 .score-label {
-  font-size: 10px;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;
 }
-
 .stats {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin: 10px 0;
-  font-size: 11px;
-  color: #9ca3af;
+  display: flex; justify-content: center; gap: 16px;
+  margin: 10px 0; font-size: 11px; color: #9ca3af;
 }
-
-.stat-value {
-  color: #fff;
-  font-weight: 600;
-}
-
-.links {
-  margin-top: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.links a {
-  color: #06b6d4;
-  font-size: 11px;
-  text-decoration: none;
-}
-
-.links a:hover {
-  text-decoration: underline;
-}
-
-.error {
-  color: #ef4444;
-  font-size: 11px;
-  margin-top: 8px;
-}
-
-.hint {
-  font-size: 10px;
-  color: #6b7280;
-  margin-top: 12px;
-}
+.stat-value { color: #fff; font-weight: 600; }
+.links { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+.links a { color: #06b6d4; font-size: 11px; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.error { color: #ef4444; font-size: 11px; margin-top: 8px; }
+.hint { font-size: 10px; color: #6b7280; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">A</div>
+  <h1>AutoDev</h1>
+  <p class="subtitle">GitHub Profile Score</p>
+  <div class="input-group">
+    <input type="text" id="username-input" placeholder="Enter GitHub username..." />
+    <button class="btn" id="analyze-btn">Analyze</button>
+  </div>
+  <div id="result"></div>
+  <div id="error" class="error"></div>
+  <p class="hint">Scores are public — no login needed</p>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>

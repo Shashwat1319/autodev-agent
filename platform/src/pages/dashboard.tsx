@@ -1,9 +1,9 @@
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import PHBanner from '../components/PHBanner';
-import { getLangColor } from '../lib/lang-colors';
+import { getLangColor } from '../lib/format';
 import { BASE_URL } from '../lib/config';
+import Layout from '../components/Layout';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -12,11 +12,6 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [mobileMenu, setMobileMenu] = useState(false);
-  useEffect(() => {
-    document.body.style.overflow = mobileMenu ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [mobileMenu]);
   useEffect(() => {
     const raw = router.query.user;
     const userParam = Array.isArray(raw) ? raw[0] : raw;
@@ -52,7 +47,7 @@ export default function Dashboard() {
   const bg = (lang: string) => getLangColor(lang);
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e] text-white">
+    <>
       <Head>
         <title>{profile ? `${profile.username} — GitHub Profile Score ${profile.overallScore}/100 | AutoDev` : 'GitHub Profile Analyzer — Free Score & Analysis | AutoDev'}</title>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -79,49 +74,7 @@ export default function Dashboard() {
         <meta name="twitter:description" content={profile ? `Free analysis: ${profile.totalRepos} repos · ${profile.totalStars} stars · ${profile.totalForks} forks` : 'Analyze any public GitHub profile for free. Get score, badges, and recruiter-ready README.'} />
       </Head>
 
-      {/* Nav */}
-      <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="glass border-b border-white/5">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-sm font-bold text-black group-hover:scale-105 transition">
-              A
-            </div>
-            <span className="text-lg font-bold">
-              <span className="text-cyan-400">{'{'}</span>AutoDev<span className="text-cyan-400">{'}'}</span>
-            </span>
-            <span className="text-xs text-gray-500 ml-2 hidden sm:inline">Dashboard</span>
-          </a>
-          <nav className="hidden md:flex items-center gap-2 sm:gap-4">
-            <a href="/" className="text-xs text-gray-400 hover:text-white transition">Home</a>
-            <a href="/leaderboard" className="text-xs text-gray-400 hover:text-white transition hidden sm:inline">Leaderboard</a>
-            <a href="/readme-generator" className="text-xs text-gray-400 hover:text-white transition">README</a>
-            <a href="/dashboard" className="text-xs text-cyan-400 font-medium">Dashboard</a>
-          </nav>
-          <div className="md:hidden flex items-center">
-            <button onClick={() => setMobileMenu(!mobileMenu)} className="text-gray-400 hover:text-white transition p-1">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenu ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} /></svg>
-            </button>
-          </div>
-          </div>
-        </div>
-        <PHBanner />
-      </header>
-
-      {/* Mobile Menu */}
-      {mobileMenu && (
-        <div className="fixed inset-0 z-50 md:hidden" onClick={() => setMobileMenu(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative glass rounded-b-2xl p-6 pt-28" onClick={e => e.stopPropagation()}>
-            <nav className="flex flex-col gap-4 text-center">
-              <a href="/" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Home</a>
-              <a href="/leaderboard" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Leaderboard</a>
-              <a href="/readme-generator" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">README Generator</a>
-              <a href="/dashboard" onClick={() => setMobileMenu(false)} className="text-gray-300 hover:text-white transition text-lg font-medium">Dashboard</a>
-            </nav>
-          </div>
-        </div>
-      )}
+      <Layout currentPage="/dashboard" subtitle="Dashboard">
 
       {/* Search Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pt-28 sm:pt-36">
@@ -416,6 +369,7 @@ export default function Dashboard() {
           ☕ Buy me a coffee
         </a>
       </footer>
-    </div>
+      </Layout>
+    </>
   );
 }

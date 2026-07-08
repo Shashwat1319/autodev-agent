@@ -1,10 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import sharp from 'sharp';
-import { rateLimit } from '../../lib/rate-limit';
+import { rateLimit, validateUsername } from '../../lib/api-utils';
 import { analyzeProfile } from '../../lib/analyze-profile';
-import { getScoreHex } from '../../lib/score';
+import { getScoreHex } from '../../lib/format';
 import { BASE_URL } from '../../lib/config';
-import { validateUsername } from '../../lib/validation';
 
 export default async function handler(
   req: NextApiRequest,
