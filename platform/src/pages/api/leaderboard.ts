@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { rateLimit } from '../../lib/rate-limit';
 import { analyzeProfile } from '../../lib/analyze-profile';
+import { validateUsername } from '../../lib/validation';
 
 const FEATURED = [
   'torvalds', 'gaearon', 'sindresorhus', 'tj', 'Shashwat1319',
@@ -22,7 +23,8 @@ export default async function handler(
   if (q && typeof q === 'string') {
     const extra = q.split(',').map((u: string) => u.trim()).filter(Boolean).slice(0, 10);
     extra.forEach((u) => {
-      if (!usernames.includes(u)) usernames.push(u);
+      const name = validateUsername(u);
+      if (name && !usernames.includes(name)) usernames.push(name);
     });
   }
 

@@ -3,8 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import PHBanner from '../components/PHBanner';
 
 const rankColors = ['#ffd700', '#c0c0c0', '#cd7f32'];
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://autodev-kappa.vercel.app';
+import { BASE_URL } from '../lib/config';
 
 export default function Leaderboard() {
   const [entries, setEntries] = useState<any[]>([]);

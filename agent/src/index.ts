@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 import { loadConfig } from './config';
 import { FileWatcher } from './core/watcher';
-import { CloudConnector } from './core/cloud-connector';
-import { SyncQueue } from './core/sync-queue';
-import { CommitEvent, AgentStatus } from '../../shared/types/index';
+import { CommitEvent } from '../../shared/types/index';
 
 console.log(`
   ╔══════════════════════════════════════╗
@@ -13,8 +11,6 @@ console.log(`
 `);
 
 const config = loadConfig();
-const cloud = new CloudConnector();
-const syncQueue = new SyncQueue();
 
 const watcher = new FileWatcher(config);
 watcher.onCommitCallback((repoPath: string) => {
@@ -26,33 +22,17 @@ watcher.onCommitCallback((repoPath: string) => {
     timestamp: new Date().toISOString(),
     hash: '',
   };
-  cloud.sendCommit(event);
 });
 
-cloud.connect();
 watcher.start();
 
 process.on('SIGINT', () => {
   console.log('\nShutting down AutoDev agent...');
   watcher.stop();
-  cloud.disconnect();
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
   watcher.stop();
-  cloud.disconnect();
   process.exit(0);
 });
-
-// Periodic status heartbeat
-setInterval(() => {
-  const status: AgentStatus = {
-    running: true,
-    connected: cloud.isConnected(),
-    watchedRepos: config.repos.filter(r => r.enabled).length,
-    lastSync: new Date().toISOString(),
-    commitsToday: 0,
-  };
-  cloud.sendStatus(status);
-}, 60000);

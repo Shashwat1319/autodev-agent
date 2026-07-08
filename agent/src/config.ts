@@ -38,11 +38,3 @@ function getDefaultConfig(): AutoDevConfig {
     ignoredPaths: ['node_modules', '.git', 'dist', 'build', '.next', 'target', 'venv'],
   };
 }
-
-export function getApiUrl(): string {
-  return process.env.AUTODEV_API_URL || 'http://localhost:3000';
-}
-
-export function getAuthToken(): string {
-  return process.env.AUTODEV_AUTH_TOKEN || '';
-}

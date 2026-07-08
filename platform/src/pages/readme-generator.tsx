@@ -1,8 +1,7 @@
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import PHBanner from '../components/PHBanner';
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://autodev-kappa.vercel.app';
+import { BASE_URL } from '../lib/config';
 
 const STYLES = [
   { id: 'professional', label: 'Professional', desc: 'Clean, well-structured with stats and activity' },

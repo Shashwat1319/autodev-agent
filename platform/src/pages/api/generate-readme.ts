@@ -4,6 +4,8 @@ import { calculateScore } from '../../lib/analyze-profile';
 import { fetchGitHubJSON, fetchUserAndRepos } from '../../shared/github-client';
 import { getLangColor } from '../../lib/lang-colors';
 import { getScoreShieldsColor } from '../../lib/score';
+import { BASE_URL } from '../../lib/config';
+import { validateUsername } from '../../lib/validation';
 
 function generateReadme(data: {
   username: string; avatar: string; name: string; bio: string;
@@ -46,7 +48,6 @@ function generateReadme(data: {
     ? `\n### ⚡ Recent Activity\n\n${data.recentActivity.map(a => `- ${a}`).join('\n')}`
     : '';
 
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://autodev-kappa.vercel.app';
   const scoreBadge = `[![AutoDev Score](https://img.shields.io/badge/AutoDev%20Score-${data.score}/100-${getScoreShieldsColor(data.score)}?style=for-the-badge&logo=target&logoColor=white)](${BASE_URL}/dashboard?user=${data.username})`;
 
   const aboutLines: string[] = [];
@@ -270,16 +271,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!rl.allowed) return res.status(429).json({ error: `Too many requests. Try again in ${Math.ceil(rl.resetIn / 1000)}s.` });
 
   const { username, style = 'professional' } = req.method === 'POST' ? req.body : req.query;
-
-  if (!username || typeof username !== 'string') {
-    return res.status(400).json({ error: 'Username is required' });
-  }
+  const validated = validateUsername(username);
+  if (!validated) return res.status(400).json({ error: 'Username is required' });
 
   try {
-    const { user, repoList, totalStars, totalForks } = await fetchUserAndRepos(username);
+    const { user, repoList, totalStars, totalForks } = await fetchUserAndRepos(validated);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const events = await fetchGitHubJSON(`https://api.github.com/users/${username}/events/public?per_page=30`);
+    const events = await fetchGitHubJSON(`https://api.github.com/users/${validated}/events/public?per_page=30`);
     const eventList = Array.isArray(events) ? events : [];
 
     const langMap: Record<string, number> = {};

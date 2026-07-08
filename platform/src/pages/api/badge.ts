@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { rateLimit } from '../../lib/rate-limit';
 import { analyzeProfile } from '../../lib/analyze-profile';
 import { getScoreHex, getScoreLabel } from '../../lib/score';
+import { validateUsername } from '../../lib/validation';
 
 function badgeSVG(label: string, score: number, color: string, labelColor: string) {
   const lw = label.length * 7.5 + 20;
@@ -41,13 +42,11 @@ export default async function handler(
   if (!rl.allowed) return res.status(200).setHeader('Content-Type', 'image/svg+xml').send(badgeSVG('Rate Limited', 0, '#f44336', '#555'));
 
   const { username } = req.query;
-
-  if (!username || typeof username !== 'string') {
-    return res.status(200).setHeader('Content-Type', 'image/svg+xml').send(badgeSVG('Error', 0, '#f44336', '#555'));
-  }
+  const validated = validateUsername(username);
+  if (!validated) return res.status(400).json({ error: 'Invalid username' });
 
   try {
-    const analysis = await analyzeProfile(username);
+    const analysis = await analyzeProfile(validated);
     if (!analysis) {
       return res.status(200).setHeader('Content-Type', 'image/svg+xml').send(badgeSVG('User Not Found', 0, '#f44336', '#555'));
     }

@@ -3,8 +3,8 @@ import sharp from 'sharp';
 import { rateLimit } from '../../lib/rate-limit';
 import { analyzeProfile } from '../../lib/analyze-profile';
 import { getScoreHex } from '../../lib/score';
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://autodev-kappa.vercel.app';
+import { BASE_URL } from '../../lib/config';
+import { validateUsername } from '../../lib/validation';
 
 export default async function handler(
   req: NextApiRequest,
@@ -14,12 +14,13 @@ export default async function handler(
   const rl = rateLimit({ key: `og:${ip}`, maxRequests: 30, windowMs: 60000 });
   if (!rl.allowed) return res.status(429).json({ error: 'Too many requests' });
 
-  const usernameParam = req.query.username;
-  const isGeneric = !usernameParam || typeof usernameParam !== 'string';
-  const displayUsername = isGeneric ? 'AutoDev' : String(usernameParam).replace(/&/g, '&amp;');
+  const validated = validateUsername(req.query.username);
+  if (req.query.username && !validated) return res.status(400).json({ error: 'Invalid username' });
+  const isGeneric = !validated;
+  const displayUsername = isGeneric ? 'AutoDev' : validated.replace(/&/g, '&amp;');
 
   try {
-    const analysis = !isGeneric ? await analyzeProfile(usernameParam as string) : null;
+    const analysis = !isGeneric ? await analyzeProfile(validated) : null;
 
     let avatar = '';
     let repos = 0;
@@ -65,7 +66,7 @@ export default async function handler(
 
       ${!isGeneric && avatar ? `<image href="${avatar}" x="552" y="140" width="96" height="96" clip-path="url(#avatarClip)"/>` : `
       <circle cx="600" cy="188" r="48" fill="#1a1f2e"/>
-      <text x="600" y="203" fill="#06b6d4" font-size="36" font-weight="700" text-anchor="middle" font-family="sans-serif">${isGeneric ? 'A' : (String(usernameParam)[0] || '?').toUpperCase()}</text>`}
+      <text x="600" y="203" fill="#06b6d4" font-size="36" font-weight="700" text-anchor="middle" font-family="sans-serif">${isGeneric ? 'A' : (validated[0] || '?').toUpperCase()}</text>`}
 
       <text x="600" y="275" fill="#fff" font-size="36" font-weight="700" text-anchor="middle" font-family="sans-serif">${displayUsername}</text>
 
@@ -86,7 +87,7 @@ export default async function handler(
       </g>
 
       <line x1="60" y1="560" x2="1140" y2="560" stroke="rgba(255,255,255,0.05)"/>
-      <text x="600" y="590" fill="#6b7280" font-size="13" text-anchor="middle" font-family="sans-serif">npx autodev-agent · ${process.env.NEXT_PUBLIC_BASE_URL?.replace(/^https?:\/\//, '') || 'autodev-kappa.vercel.app'}</text>
+      <text x="600" y="590" fill="#6b7280" font-size="13" text-anchor="middle" font-family="sans-serif">npx autodev-agent · ${BASE_URL.replace(/^https?:\/\//, '')}</text>
     </svg>`;
 
     const png = await sharp(Buffer.from(svg)).png().toBuffer();

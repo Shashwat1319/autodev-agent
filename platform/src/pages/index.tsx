@@ -26,7 +26,7 @@ const stats = [
   { value: 'Free', label: 'Open source' },
 ];
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://autodev-kappa.vercel.app';
+import { BASE_URL } from '../lib/config';
 
 export default function Home() {
   const [username, setUsername] = useState('');

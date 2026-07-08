@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import PHBanner from '../components/PHBanner';
 import { getLangColor } from '../lib/lang-colors';
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://autodev-kappa.vercel.app';
+import { BASE_URL } from '../lib/config';
 
 export default function Dashboard() {
   const router = useRouter();

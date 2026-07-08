@@ -51,14 +51,6 @@ export interface RepoAnalysis {
   weaknesses: string[];
 }
 
-export interface AgentStatus {
-  running: boolean;
-  connected: boolean;
-  watchedRepos: number;
-  lastSync: string;
-  commitsToday: number;
-}
-
 export interface UserSession {
   id: string;
   githubUsername: string;

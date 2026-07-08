@@ -1,6 +1,5 @@
 import type { NextApiResponse } from 'next';
-
-const BASE_URL = 'https://autodev-kappa.vercel.app';
+import { BASE_URL } from '../lib/config';
 
 const pages = [
   { loc: '/', priority: '1.0', changefreq: 'weekly' },
