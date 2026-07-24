@@ -43,6 +43,9 @@ export default function Home() {
     if (result && result !== prevResultRef.current) {
       prevResultRef.current = result;
       const timer = setTimeout(() => setShowShareModal(true), 600);
+      setTimeout(() => {
+        document.getElementById('home-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
       return () => clearTimeout(timer);
     }
   }, [result]);
@@ -210,7 +213,7 @@ export default function Home() {
             </div>
           )}
           {result && (
-            <div className="mt-8 glass rounded-2xl p-8 max-w-3xl mx-auto text-left animate-slide-up glow">
+            <div id="home-result" className="mt-8 glass rounded-2xl p-8 max-w-3xl mx-auto text-left animate-slide-up glow">
               <div className="flex items-center gap-5 mb-6">
                 <img src={result.avatar} alt={`${result.username}'s avatar`} className="w-16 h-16 rounded-full ring-2 ring-cyan-400/50" />
                 <div className="flex-1">

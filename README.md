@@ -4,6 +4,7 @@
   <a href="https://autodev-kappa.vercel.app"><img src="https://img.shields.io/badge/deployed-vercel-000?style=for-the-badge" /></a>
   <a href="https://www.npmjs.com/package/autodev-agent"><img src="https://img.shields.io/npm/v/autodev-agent?style=for-the-badge" /></a>
   <a href="https://www.npmjs.com/package/autodev-agent"><img src="https://img.shields.io/npm/dm/autodev-agent?style=for-the-badge" /></a>
+  <a href="https://autodev-kappa.vercel.app/dashboard?user=Shashwat1319"><img src="https://autodev-kappa.vercel.app/api/badge?username=Shashwat1319" /></a>
 </div>
 
 A free, no-login GitHub profile analyzer and README generator. Also includes a local git automation agent (`npx autodev-agent`) and a Chrome extension for inline profile scores.

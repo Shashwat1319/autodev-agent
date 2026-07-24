@@ -7,6 +7,12 @@ console.log(`
   ║        AutoDev Agent v0.1           ║
   ║   Your code. Auto-piloted.           ║
   ╚══════════════════════════════════════╝
+
+  📊 See your GitHub profile score:
+  https://autodev-kappa.vercel.app/dashboard?user=YOUR_USERNAME
+
+  🏆 Add a score badge to your README:
+  https://autodev-kappa.vercel.app/dashboard
 `);
 
 const config = loadConfig();
