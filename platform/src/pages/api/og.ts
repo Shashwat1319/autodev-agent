@@ -16,7 +16,7 @@ export default async function handler(
   const validated = validateUsername(req.query.username);
   if (req.query.username && !validated) return res.status(400).json({ error: 'Invalid username' });
   const isGeneric = !validated;
-  const displayUsername = isGeneric ? 'AutoDev' : validated.replace(/&/g, '&amp;');
+  const displayUsername = isGeneric ? 'AutoDev' : validated.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
   try {
     const analysis = !isGeneric ? await analyzeProfile(validated) : null;

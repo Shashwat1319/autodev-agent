@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       showResult(data);
     } catch (err) {
-      error.textContent = err.message;
+      error.textContent = (err instanceof Error ? err.message : String(err)) || 'An error occurred';
     }
 
     analyzing = false;
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="links">
           <a href="https://autodev-kappa.vercel.app/dashboard?user=${data.username}" target="_blank">View Full Report →</a>
-          <a href="https://autodev-kappa.vercel.app/readme-generator?user=${data.username}" target="_blank">Generate README →</a>
+          <a href="https://autodev-kappa.vercel.app/readme-generator" target="_blank">Generate README →</a>
         </div>
       </div>
     `;

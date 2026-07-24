@@ -1,4 +1,3 @@
-const GITHUB_PROFILE_REGEX = /^https:\/\/github\.com\/([a-zA-Z0-9_-]+)$/;
 const EXCLUDED_PATHS = ['settings', 'notifications', 'login', 'signup', 'explore', 'topics', 'trending', 'marketplace', 'pulls', 'issues', 'notifications', 'organizations', 'codespaces', 'settings', 'new', 'search'];
 
 function isProfilePage() {
@@ -105,7 +104,7 @@ async function fetchBadge(username) {
     if (target) {
       target.appendChild(wrapper);
     }
-  } catch {}
+  } catch (err) { console.warn('AutoDev badge injection failed:', err); }
 }
 
 function observeProfile() {

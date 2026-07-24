@@ -53,7 +53,7 @@
       if (!res.ok) return;
       const data = await res.json();
       injectBadge(data.overallScore);
-    } catch {}
+    } catch (err) { console.warn('AutoDev score fetch failed:', err); }
   }
 
   function checkProfile() {

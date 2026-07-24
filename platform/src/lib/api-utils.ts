@@ -1,3 +1,7 @@
+// In-memory rate limiter — effective within a single server instance.
+// On serverless platforms (Vercel, Netlify, AWS Lambda) each cold start
+// creates its own map, so this provides defense-in-depth, not hard enforcement.
+// For production at scale, replace with Vercel KV, Upstash, or edge middleware.
 const rateMap = new Map<string, { count: number; resetAt: number }>();
 
 setInterval(() => {

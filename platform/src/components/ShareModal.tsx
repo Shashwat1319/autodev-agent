@@ -1,14 +1,26 @@
 import { BASE_URL, STRIPE_PRO_LINK } from '../lib/config';
+import { useEffect, useRef } from 'react';
 
 export default function ShareModal({ profile, onClose }: { profile: any; onClose: () => void }) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKey);
+    modalRef.current?.focus();
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
   const shareLinkedIn = () => {
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${BASE_URL}/dashboard?user=${profile.username}`)}`, '_blank');
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${BASE_URL}/dashboard?user=${profile.username}`)}`, '_blank', 'noopener');
   };
   const shareX = () => {
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`My AutoDev score is ${profile.overallScore}/100! Check yours →`)}&url=${encodeURIComponent(`${BASE_URL}/dashboard?user=${profile.username}`)}`, '_blank');
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`My AutoDev score is ${profile.overallScore}/100! Check yours →`)}&url=${encodeURIComponent(`${BASE_URL}/dashboard?user=${profile.username}`)}`, '_blank', 'noopener');
   };
   const copyBadge = () => {
-    navigator.clipboard.writeText(`[![AutoDev Score](${BASE_URL}/api/badge?username=${profile.username})](${BASE_URL}/dashboard?user=${profile.username})`);
+    navigator.clipboard.writeText(`[![AutoDev Score](${BASE_URL}/api/badge?username=${profile.username})](${BASE_URL}/dashboard?user=${profile.username})`).catch(() => {});
   };
   const handlePro = () => {
     if (STRIPE_PRO_LINK) {
@@ -21,11 +33,13 @@ export default function ShareModal({ profile, onClose }: { profile: any; onClose
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div
-        className="relative glass rounded-2xl p-8 max-w-lg w-full animate-slide-up glow text-center"
-        onClick={e => e.stopPropagation()}
-      >
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white transition text-xl">&times;</button>
+        <div
+          ref={modalRef}
+          tabIndex={-1}
+          className="relative glass rounded-2xl p-8 max-w-lg w-full animate-slide-up glow text-center"
+          onClick={e => e.stopPropagation()}
+        >
+          <button onClick={onClose} aria-label="Close modal" className="absolute top-4 right-4 text-gray-500 hover:text-white transition text-xl">&times;</button>
 
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-2xl font-bold text-black mx-auto mb-4">
           A

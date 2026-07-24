@@ -14,11 +14,12 @@ export default function ProReport() {
 
   useEffect(() => {
     if (!username || typeof username !== 'string') return;
-    const u = username as string;
-    fetch(`/api/analyze?username=${encodeURIComponent(u)}`)
+    const abort = new AbortController();
+    fetch(`/api/analyze?username=${encodeURIComponent(username)}`, { signal: abort.signal })
       .then(r => { if (!r.ok) throw new Error('Failed to load'); return r.json(); })
       .then(d => { setProfile(d); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
+      .catch(e => { if (e.name !== 'AbortError') { setError(e.message); setLoading(false); } });
+    return () => abort.abort();
   }, [username]);
 
   const handlePrint = () => window.print();

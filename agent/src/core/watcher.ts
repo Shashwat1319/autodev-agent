@@ -1,10 +1,9 @@
 import * as chokidar from 'chokidar';
-import * as simpleGit from 'simple-git';
-import * as path from 'path';
+import simpleGit from 'simple-git';
 import { AutoDevConfig } from '../../../shared/types/index';
 
 async function commitAndPush(repoPath: string, message: string, push: boolean): Promise<string> {
-  const git = simpleGit.simpleGit(repoPath);
+  const git = simpleGit(repoPath);
   const status = await git.status();
   if (status.files.length === 0) throw new Error('No changes to commit');
   await git.add('.');
@@ -78,11 +77,11 @@ export class FileWatcher {
   private onChange(filePath: string, event: string): void {
     if (!this.config.autoCommit) return;
 
-    const relativePath = this.getRelativePath(filePath);
-    this.pendingChanges.add(relativePath);
+    this.pendingChanges.add(filePath);
     this.changeCount++;
 
-    console.log(`[${event}] ${relativePath}`);
+    const relPath = this.getRelativePath(filePath);
+    console.log(`[${event}] ${relPath}`);
 
     if (this.changeCount >= this.config.maxChangesBeforeCommit) {
       this.flush();
@@ -117,8 +116,9 @@ export class FileWatcher {
       if (repoChanges.length === 0) continue;
 
       try {
+        const relative = repoChanges.map(c => c.slice(repo.localPath.length).replace(/^[\\/]/, ''));
         const message = this.config.commitMessagePattern
-          .replace('{files}', repoChanges.slice(0, 3).join(', ') + (repoChanges.length > 3 ? ` +${repoChanges.length - 3} more` : ''));
+          .replace('{files}', relative.slice(0, 3).join(', ') + (relative.length > 3 ? ` +${relative.length - 3} more` : ''));
 
         await commitAndPush(repo.localPath, message, this.config.autoPush);
         console.log(`Committed to ${repo.localPath}: ${message}`);

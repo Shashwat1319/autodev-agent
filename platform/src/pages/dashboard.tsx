@@ -2,7 +2,7 @@ import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { getLangColor } from '../lib/format';
-import { BASE_URL, STRIPE_PRO_LINK } from '../lib/config';
+import { BASE_URL } from '../lib/config';
 import Layout from '../components/Layout';
 import ShareModal from '../components/ShareModal';
 
