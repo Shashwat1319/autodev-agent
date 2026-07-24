@@ -1,7 +1,9 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getLangColor } from '../lib/format';
+import { STRIPE_PRO_LINK } from '../lib/config';
 import Layout from '../components/Layout';
+import ShareModal from '../components/ShareModal';
 
 const features = [
   { icon: '👁️', title: 'File Watcher', desc: 'Detects every change in real-time. No manual staging needed.' },
@@ -35,6 +37,15 @@ export default function Home() {
   const [error, setError] = useState('');
   const [npxCopied, setNpxCopied] = useState(false);
   const [badgeCopied, setBadgeCopied] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const prevResultRef = useRef<any>(null);
+  useEffect(() => {
+    if (result && result !== prevResultRef.current) {
+      prevResultRef.current = result;
+      const timer = setTimeout(() => setShowShareModal(true), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [result]);
 
   const analyzeProfile = async () => {
     const u = username.trim();
@@ -68,6 +79,8 @@ export default function Home() {
         <meta property="og:title" content="AutoDev — Free GitHub Profile Analyzer & README Generator" />
         <meta property="og:description" content="Auto-commit, auto-push, auto-analyze your GitHub profile for free. Get your GitHub score, badges, and recruiter-ready README." />
         <meta property="og:image" content={`${BASE_URL}/api/og`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content={BASE_URL} />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
@@ -93,6 +106,36 @@ export default function Home() {
               author: {
                 '@type': 'Person',
                 name: 'Shashwat Srivastava',
+                url: 'https://github.com/Shashwat1319',
+              },
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'AutoDev',
+              url: BASE_URL,
+              logo: `${BASE_URL}/favicon.svg`,
+              sameAs: ['https://github.com/Shashwat1319/autodev-agent'],
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'AutoDev',
+              url: BASE_URL,
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: `${BASE_URL}/dashboard?user={search_term_string}`,
+                'query-input': 'required name=search_term_string',
               },
             }),
           }}
@@ -404,6 +447,8 @@ export default function Home() {
           </a>
         </div>
       </section>
+
+      {showShareModal && result && <ShareModal profile={result} onClose={() => setShowShareModal(false)} />}
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 sm:py-10">

@@ -1,20 +1,29 @@
 import * as chokidar from 'chokidar';
+import * as simpleGit from 'simple-git';
 import * as path from 'path';
 import { AutoDevConfig } from '../../../shared/types/index';
-import { GitEngine } from './git-engine';
+
+async function commitAndPush(repoPath: string, message: string, push: boolean): Promise<string> {
+  const git = simpleGit.simpleGit(repoPath);
+  const status = await git.status();
+  if (status.files.length === 0) throw new Error('No changes to commit');
+  await git.add('.');
+  const result = await git.commit(message);
+  const hash = result.commit || 'unknown';
+  if (push) await git.push('origin', status.current || 'main');
+  return hash;
+}
 
 export class FileWatcher {
   private watcher: chokidar.FSWatcher | null = null;
   private changeTimer: NodeJS.Timeout | null = null;
   private pendingChanges: Set<string> = new Set();
-  private gitEngine: GitEngine;
   private config: AutoDevConfig;
   private changeCount: number = 0;
   private onCommit: ((repo: string) => void) | null = null;
 
   constructor(config: AutoDevConfig) {
     this.config = config;
-    this.gitEngine = new GitEngine();
   }
 
   onCommitCallback(cb: (repo: string) => void): void {
@@ -111,7 +120,7 @@ export class FileWatcher {
         const message = this.config.commitMessagePattern
           .replace('{files}', repoChanges.slice(0, 3).join(', ') + (repoChanges.length > 3 ? ` +${repoChanges.length - 3} more` : ''));
 
-        await this.gitEngine.commitAndPush(repo.localPath, message, this.config.autoPush);
+        await commitAndPush(repo.localPath, message, this.config.autoPush);
         console.log(`Committed to ${repo.localPath}: ${message}`);
 
         if (this.onCommit) {

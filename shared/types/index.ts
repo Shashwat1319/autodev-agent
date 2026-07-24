@@ -15,15 +15,6 @@ export interface WatchedRepo {
   enabled: boolean;
 }
 
-export interface CommitEvent {
-  id: string;
-  repo: string;
-  message: string;
-  files: string[];
-  timestamp: string;
-  hash: string;
-}
-
 export interface ProfileAnalysis {
   username: string;
   avatar: string;

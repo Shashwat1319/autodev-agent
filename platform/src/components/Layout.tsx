@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/leaderboard', label: 'Leaderboard' },
   { href: '/readme-generator', label: 'README' },
+  { href: '/pro-report/Shashwat1319', label: 'Pro Report' },
 ];
 
 const HOME_EXTRA = [

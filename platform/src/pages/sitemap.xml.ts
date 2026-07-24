@@ -6,6 +6,7 @@ const pages = [
   { loc: '/dashboard', priority: '0.8', changefreq: 'weekly' },
   { loc: '/leaderboard', priority: '0.7', changefreq: 'daily' },
   { loc: '/readme-generator', priority: '0.8', changefreq: 'weekly' },
+  { loc: '/pro-report/Shashwat1319', priority: '0.5', changefreq: 'monthly' },
 ];
 
 export async function getServerSideProps({ res }: { res: NextApiResponse }) {

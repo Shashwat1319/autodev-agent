@@ -79,17 +79,36 @@ export default function ReadmeGenerator() {
         <title>Free GitHub README Generator — 3 Professional Styles | AutoDev</title>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="canonical" href={`${BASE_URL}/readme-generator`} />
-        <meta name="description" content="Generate a free GitHub profile README from your public GitHub data. Three styles: Professional, Minimal, Recruiter. Preview, copy, or download. No sign-up." />
+        <meta name="description" content="Free GitHub profile README generator. Three styles: Professional, Minimal, Recruiter. Preview, copy, or download. No sign-up needed." />
         <meta name="keywords" content="free README generator, GitHub profile README, README template, GitHub README maker, profile README, developer portfolio README" />
         <meta property="og:title" content="Free GitHub README Generator — 3 Professional Styles | AutoDev" />
         <meta property="og:description" content="Generate a free GitHub profile README from your GitHub data. Three styles — Professional, Minimal, Recruiter. Preview, copy, or download." />
         <meta property="og:image" content={`${BASE_URL}/api/og`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content={`${BASE_URL}/readme-generator`} />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Free GitHub README Generator — 3 Professional Styles | AutoDev" />
         <meta name="twitter:description" content="Generate a free GitHub profile README from your GitHub data. Three styles — preview, copy, or download." />
         <meta name="twitter:image" content={`${BASE_URL}/api/og`} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'HowTo',
+              name: 'Generate a GitHub Profile README',
+              description: 'Create a professional GitHub profile README from your public GitHub data in three styles.',
+              step: [
+                { '@type': 'HowToStep', position: 1, name: 'Enter your GitHub username' },
+                { '@type': 'HowToStep', position: 2, name: 'Choose a style: Professional, Minimal, or Recruiter' },
+                { '@type': 'HowToStep', position: 3, name: 'Click Generate to create your README' },
+                { '@type': 'HowToStep', position: 4, name: 'Preview, copy to clipboard, or download as Markdown' },
+              ],
+            }),
+          }}
+        />
       </Head>
 
       <Layout currentPage="/readme-generator" subtitle="README Generator">

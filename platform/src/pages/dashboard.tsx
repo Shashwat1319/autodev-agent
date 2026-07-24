@@ -2,8 +2,9 @@ import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { getLangColor } from '../lib/format';
-import { BASE_URL } from '../lib/config';
+import { BASE_URL, STRIPE_PRO_LINK } from '../lib/config';
 import Layout from '../components/Layout';
+import ShareModal from '../components/ShareModal';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -12,6 +13,13 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
+  useEffect(() => {
+    if (profile && !showShareModal) {
+      const timer = setTimeout(() => setShowShareModal(true), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [profile]);
   useEffect(() => {
     const raw = router.query.user;
     const userParam = Array.isArray(raw) ? raw[0] : raw;
@@ -44,8 +52,6 @@ export default function Dashboard() {
     setLoading(false);
   };
 
-  const bg = (lang: string) => getLangColor(lang);
-
   return (
     <>
       <Head>
@@ -58,12 +64,16 @@ export default function Dashboard() {
         {profile?.username || username ? (
           <>
             <meta property="og:image" content={`${BASE_URL}/api/og?username=${profile?.username || username}`} />
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
             <meta property="og:url" content={`${BASE_URL}/dashboard?user=${profile?.username || username}`} />
             <meta name="twitter:image" content={`${BASE_URL}/api/og?username=${profile?.username || username}`} />
           </>
         ) : (
           <>
             <meta property="og:image" content={`${BASE_URL}/api/og`} />
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
             <meta property="og:url" content={`${BASE_URL}/dashboard`} />
             <meta name="twitter:image" content={`${BASE_URL}/api/og`} />
           </>
@@ -72,6 +82,21 @@ export default function Dashboard() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={profile ? `${profile.username}'s GitHub Score: ${profile.overallScore}/100 | AutoDev` : 'Free GitHub Profile Analyzer — AutoDev'} />
         <meta name="twitter:description" content={profile ? `Free analysis: ${profile.totalRepos} repos · ${profile.totalStars} stars · ${profile.totalForks} forks` : 'Analyze any public GitHub profile for free. Get score, badges, and recruiter-ready README.'} />
+        {profile && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Person",
+                "name": profile.username,
+                "url": `https://github.com/${profile.username}`,
+                "image": profile.avatar,
+                "description": `GitHub profile with AutoDev score ${profile.overallScore}/100. ${profile.totalRepos} repos, ${profile.totalStars} stars.`
+              })
+            }}
+          />
+        )}
       </Head>
 
       <Layout currentPage="/dashboard" subtitle="Dashboard">
@@ -173,7 +198,7 @@ export default function Dashboard() {
           <div className="glass rounded-2xl p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Badge</h3>
+                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Badge</h2>
                 <p className="text-xs text-gray-500">Show off your score — add this to your GitHub README</p>
               </div>
               <img
@@ -205,7 +230,7 @@ export default function Dashboard() {
           <div className="glass rounded-2xl p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Share</h3>
+                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Share</h2>
                 <p className="text-xs text-gray-500">Let your network know your score</p>
               </div>
             </div>
@@ -243,19 +268,19 @@ export default function Dashboard() {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Languages */}
             <div className="glass rounded-2xl p-6">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Languages</h3>
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Languages</h2>
               {profile.languages?.length > 0 && (
                 <>
                   <div className="flex gap-0.5 h-2 mb-4 rounded-full overflow-hidden">
                     {profile.languages.slice(0, 8).map((l: any) => (
-                      <div key={l.name} className="h-full rounded-full" style={{ width: `${l.percentage}%`, backgroundColor: bg(l.name) }} />
+                      <div key={l.name} className="h-full rounded-full" style={{ width: `${l.percentage}%`, backgroundColor: getLangColor(l.name) }} />
                     ))}
                   </div>
                   <div className="space-y-2">
                     {profile.languages.slice(0, 8).map((l: any) => (
                       <div key={l.name} className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: bg(l.name) }} />
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: getLangColor(l.name) }} />
                           <span className="text-gray-300">{l.name}</span>
                         </div>
                         <span className="text-gray-500">{l.percentage}%</span>
@@ -271,7 +296,7 @@ export default function Dashboard() {
 
             {/* Consistency */}
             <div className="glass rounded-2xl p-6">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Consistency</h3>
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Consistency</h2>
               <div className="text-center mb-6">
                 <div className="text-5xl font-bold text-cyan-400">{profile.consistencyScore}%</div>
                 <p className="text-xs text-gray-500 mt-1">Activity consistency score</p>
@@ -293,7 +318,7 @@ export default function Dashboard() {
 
             {/* Recommendations */}
             <div className="glass rounded-2xl p-6">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Recommendations</h3>
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Recommendations</h2>
               {profile.recommendations?.length > 0 ? (
                 <ul className="space-y-3">
                   {profile.recommendations.map((r: string, i: number) => (
@@ -316,7 +341,7 @@ export default function Dashboard() {
 
           {/* Top Repos */}
           <div className="glass rounded-2xl p-6">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Top Repositories</h3>
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Top Repositories</h2>
             <div className="space-y-3">
               {profile.topRepos?.map((repo: any) => (
                 <div key={repo.name} className="glass rounded-xl p-4 hover:border-cyan-400/20 transition flex items-center justify-between gap-4">
@@ -325,7 +350,7 @@ export default function Dashboard() {
                       <span className="text-white font-medium truncate">{repo.name}</span>
                       {repo.language && (
                         <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-white/5 text-gray-400">
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: bg(repo.language) }} />
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getLangColor(repo.language) }} />
                           {repo.language}
                         </span>
                       )}
@@ -355,7 +380,7 @@ export default function Dashboard() {
           ) : (
             <div className="py-20">
               <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center text-3xl mx-auto mb-4">{'{ }'}</div>
-              <h2 className="text-xl text-white font-semibold mb-2">Welcome to AutoDev Dashboard</h2>
+              <h1 className="text-xl text-white font-semibold mb-2">Welcome to AutoDev Dashboard</h1>
               <p className="text-gray-400 text-sm">Search any GitHub username to see their analysis</p>
             </div>
           )}
@@ -369,6 +394,7 @@ export default function Dashboard() {
           ☕ Buy me a coffee
         </a>
       </footer>
+      {showShareModal && <ShareModal profile={profile} onClose={() => setShowShareModal(false)} />}
       </Layout>
     </>
   );

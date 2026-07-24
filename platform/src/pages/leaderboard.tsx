@@ -55,13 +55,37 @@ export default function Leaderboard() {
         <meta name="keywords" content="GitHub leaderboard, top GitHub developers, GitHub profile ranking, developer score, compare GitHub profiles" />
         <meta property="og:title" content="GitHub Profile Leaderboard — Top Developers Ranked | AutoDev" />
         <meta property="og:description" content="Top GitHub profiles ranked by AutoDev score. Find your rank and compare with other developers for free." />
-        <meta property="og:image" content={`${BASE_URL}/api/og?username=torvalds`} />
+        <meta property="og:image" content={`${BASE_URL}/api/og${entries.length > 0 ? `?username=${entries[0].username}` : ''}`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content={`${BASE_URL}/leaderboard`} />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="GitHub Profile Leaderboard — Top Developers Ranked | AutoDev" />
         <meta name="twitter:description" content="Top GitHub profiles ranked by AutoDev score. Find your rank for free." />
-        <meta name="twitter:image" content={`${BASE_URL}/api/og?username=torvalds`} />
+        <meta name="twitter:image" content={`${BASE_URL}/api/og${entries.length > 0 ? `?username=${entries[0].username}` : ''}`} />
+        {entries.length > 0 && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'ItemList',
+                name: 'Top GitHub Profiles',
+                description: 'Top GitHub profiles ranked by AutoDev score',
+                itemListElement: entries.slice(0, 10).map((e: any, i: number) => ({
+                  '@type': 'ListItem',
+                  position: i + 1,
+                  item: {
+                    '@type': 'Person',
+                    name: e.username,
+                    url: `https://github.com/${e.username}`,
+                  },
+                })),
+              }),
+            }}
+          />
+        )}
       </Head>
 
       <Layout currentPage="/leaderboard" subtitle="Leaderboard">
@@ -105,6 +129,7 @@ export default function Leaderboard() {
             </div>
           ) : (
             <div className="space-y-2">
+              <h2 className="sr-only">Leaderboard Rankings</h2>
               {entries.map((e, i) => (
                 <div
                   key={e.username}
