@@ -1,7 +1,7 @@
 {
   "name": "autodev-agent",
   "version": "0.1.4",
-  "description": "Auto-pilot your git. Auto-commits and pushes your code + analyzes your GitHub profile.",
+  "description": "Auto-pilot your git. Auto-commits and pushes your code + analyzes your GitHub profile. https://autodev-kappa.vercel.app",
   "main": "dist/agent/src/index.js",
   "bin": {
     "autodev-agent": "dist/agent/src/index.js"
@@ -42,6 +42,6 @@
     "type": "git",
     "url": "https://github.com/Shashwat1319/autodev-agent"
   },
-  "homepage": "https://github.com/Shashwat1319/autodev-agent",
+  "homepage": "https://autodev-kappa.vercel.app",
   "license": "MIT"
 }
