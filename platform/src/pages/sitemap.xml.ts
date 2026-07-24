@@ -7,14 +7,16 @@ const pages = [
   { loc: '/leaderboard', priority: '0.7', changefreq: 'daily' },
   { loc: '/readme-generator', priority: '0.8', changefreq: 'weekly' },
   { loc: '/pro-report/Shashwat1319', priority: '0.5', changefreq: 'monthly' },
+  { loc: '/dashboard?user=Shashwat1319', priority: '0.6', changefreq: 'weekly' },
 ];
 
 export async function getServerSideProps({ res }: { res: NextApiResponse }) {
+  const lastmod = new Date().toISOString().split('T')[0];
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${pages.map(p => `<url>
     <loc>${BASE_URL}${p.loc}</loc>
-    <lastmod>2026-07-07</lastmod>
+    <lastmod>${lastmod}</lastmod>
     <changefreq>${p.changefreq}</changefreq>
     <priority>${p.priority}</priority>
   </url>`).join('\n  ')}
