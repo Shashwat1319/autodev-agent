@@ -20,11 +20,13 @@ export function calculateScore(data: {
 }
 
 export async function analyzeProfile(username: string): Promise<ProfileAnalysis | null> {
-  const { user, repos, repoList, totalStars, totalForks } = await fetchUserAndRepos(username);
+  const [userReposResult, events] = await Promise.all([
+    fetchUserAndRepos(username),
+    fetchGitHubJSON(`https://api.github.com/users/${username}/events/public?per_page=100`),
+  ]);
+  const { user, repos, repoList, totalStars, totalForks } = userReposResult;
   if (!user) return null;
   if (!repos) return null;
-
-  const events = await fetchGitHubJSON(`https://api.github.com/users/${username}/events/public?per_page=100`);
   if (!events) return null;
 
   const eventList = Array.isArray(events) ? events : [];

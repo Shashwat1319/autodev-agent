@@ -1,4 +1,5 @@
 import { useState, ReactNode, useEffect } from 'react';
+import Link from 'next/link';
 import PHBanner from './PHBanner';
 
 const NAV_LINKS = [
@@ -6,7 +7,7 @@ const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/leaderboard', label: 'Leaderboard' },
   { href: '/readme-generator', label: 'README' },
-  { href: '/pro-report/Shashwat1319', label: 'Pro Report' },
+  { href: '/dashboard?user=Shashwat1319', label: 'Pro' },
 ];
 
 const HOME_EXTRA = [
@@ -47,22 +48,25 @@ export default function Layout({
   return (
     <>
 
-      <header className="fixed top-0 left-0 right-0 z-50">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-cyan-500 focus:text-white focus:text-sm focus:font-semibold">
+        Skip to content
+      </a>
+      <header className="fixed top-0 left-0 right-0 z-50" role="banner">
         <div className="glass border-b border-white/5">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-            <a href="/" className="flex items-center gap-2.5 group">
+            <Link href="/" className="flex items-center gap-2.5 group">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-sm font-bold text-black group-hover:scale-105 transition">A</div>
               <span className="text-lg font-bold">
                 <span className="text-cyan-400">{'{'}</span>AutoDev<span className="text-cyan-400">{'}'}</span>
               </span>
               {subtitle && <span className="text-xs text-gray-500 ml-2 hidden sm:inline">{subtitle}</span>}
-            </a>
-            <nav className="hidden md:flex items-center gap-4 sm:gap-6 text-sm">
+            </Link>
+            <nav className="hidden md:flex items-center gap-4 sm:gap-6 text-sm" aria-label="Main navigation">
               {showHomeLinks && HOME_EXTRA.map(l => (
                 <a key={l.href} href={l.href} className="text-gray-400 hover:text-white transition">{l.label}</a>
               ))}
               {NAV_LINKS.filter(l => showHomeLinks || l.href !== '/').map(l => (
-                <a key={l.href} href={l.href} className={`text-xs ${isActive(l.href)}`}>{l.label}</a>
+                <Link key={l.href} href={l.href} className={`text-xs ${isActive(l.href)}`}>{l.label}</Link>
               ))}
               {showHomeLinks && (
                 <a href="https://github.com/Shashwat1319/autodev-agent" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">
@@ -89,24 +93,24 @@ export default function Layout({
         <div className="fixed inset-0 z-50 md:hidden" onClick={() => setMobileMenu(false)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div className="relative glass rounded-b-2xl p-6 pt-28" onClick={e => e.stopPropagation()}>
-            <nav className="flex flex-col gap-4 text-center">
+            <nav className="flex flex-col gap-4 text-center" aria-label="Mobile navigation">
               {(showHomeLinks
                 ? [...HOME_EXTRA, ...NAV_LINKS.filter(l => l.href !== '/')]
                 : NAV_LINKS
               ).map(l => (
-                <a key={l.href} href={l.href} onClick={() => setMobileMenu(false)}
+                <Link key={l.href} href={l.href} onClick={() => setMobileMenu(false)}
                   className="text-lg font-medium text-gray-300 hover:text-white transition">
                   {l.label}
-                </a>
+                </Link>
               ))}
             </nav>
           </div>
         </div>
       )}
 
-      <div className="min-h-screen bg-[#0a0f1e] text-white">
-        {children}
-      </div>
+        <div className="min-h-screen bg-[#0a0f1e] text-white" role="presentation">
+          {children}
+        </div>
     </>
   );
 }

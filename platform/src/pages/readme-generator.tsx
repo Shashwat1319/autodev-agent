@@ -1,5 +1,7 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/router';
+import { track } from '@vercel/analytics';
 import { BASE_URL } from '../lib/config';
 import Layout from '../components/Layout';
 
@@ -10,32 +12,51 @@ const STYLES = [
 ];
 
 export default function ReadmeGenerator() {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [style, setStyle] = useState('professional');
   const [readme, setReadme] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [cached, setCached] = useState<Record<string, string>>({});
+  const abortRef = useRef<AbortController | null>(null);
 
-  const generatePreview = async (s?: string) => {
-    const u = username.trim();
+  useEffect(() => {
+    const raw = router.query.username;
+    const u = Array.isArray(raw) ? raw[0] : raw;
+    if (u && u !== username) {
+      setUsername(u);
+      generatePreview(style, u);
+    }
+  }, [router.query.username]);
+
+  const generatePreview = async (s?: string, overrideUser?: string) => {
+    const targetUser = (overrideUser || username).trim();
+    if (!targetUser) { setError('Please enter a GitHub username'); return; }
     const activeStyle = s || style;
-    if (!u) return;
+    if (cached[activeStyle]) { setReadme(cached[activeStyle]); if (s) setStyle(s); return; }
     if (s) setStyle(s);
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     setError('');
     setReadme('');
     setCopied(false);
     try {
-      const res = await fetch(`/api/generate-readme?username=${encodeURIComponent(u)}&style=${activeStyle}`);
+      const res = await fetch(`/api/generate-readme?username=${encodeURIComponent(targetUser)}&style=${activeStyle}`, { signal: controller.signal });
       if (!res.ok) {
-        const e = await res.json();
-        throw new Error(e.error || 'Failed to generate README');
+        let errorMsg = 'Failed to generate README';
+        try { const e = await res.json(); errorMsg = e.error || errorMsg; } catch {}
+        throw new Error(errorMsg);
       }
       const data = await res.json();
       setReadme(data.readme);
+      setCached(prev => ({ ...prev, [activeStyle]: data.readme }));
+      track('readme_generated', { username: targetUser, style: activeStyle });
     } catch (err: any) {
-      setError(err.message);
+      if (err.name !== 'AbortError') setError(err.message);
     }
     setLoading(false);
   };
@@ -70,6 +91,7 @@ export default function ReadmeGenerator() {
     if (!readme) return;
     navigator.clipboard.writeText(readme).catch(() => {});
     setCopied(true);
+    track('readme_copied', { username: username.trim(), style });
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -113,6 +135,7 @@ export default function ReadmeGenerator() {
 
       <Layout currentPage="/readme-generator" subtitle="README Generator">
 
+      <main id="main-content">
       <section className="pt-28 sm:pt-36 pb-12">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-10">
@@ -129,11 +152,12 @@ export default function ReadmeGenerator() {
               <div className="flex-1 glass rounded-xl overflow-hidden flex">
                 <input
                   type="text"
-                  placeholder="Enter GitHub username..."
-                  className="bg-transparent px-5 py-3 text-white w-full outline-none text-sm"
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && generatePreview()}
+                placeholder="Enter GitHub username..."
+                aria-label="GitHub username"
+                className="bg-transparent px-5 py-3 text-white w-full outline-none text-sm"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && generatePreview()}
                 />
               </div>
               <button
@@ -144,7 +168,7 @@ export default function ReadmeGenerator() {
                 {loading ? 'Generating...' : 'Generate'}
               </button>
             </div>
-            {error && <p className="text-red-400 text-sm mt-3 glass rounded-xl p-3 inline-block">{error}</p>}
+            {error && <p className="text-red-400 text-sm mt-3 glass rounded-xl p-3 inline-block" role="alert">{error}</p>}
           </div>
 
           {/* Style Selector */}
@@ -185,6 +209,9 @@ export default function ReadmeGenerator() {
                 <pre className="text-xs text-gray-300 font-mono whitespace-pre-wrap break-all max-h-[500px] overflow-y-auto glass rounded-xl p-4 leading-relaxed">
                   {readme}
                 </pre>
+                <p className="text-[10px] text-gray-500 mt-3 text-center">
+                  Paste this into your GitHub profile <code className="text-cyan-400">README.md</code> to show off your stats
+                </p>
               </div>
             </div>
           )}
@@ -194,14 +221,15 @@ export default function ReadmeGenerator() {
             <div className="text-center py-20">
               <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center text-3xl mx-auto mb-4">📝</div>
               <h2 className="text-xl text-white font-semibold mb-2">Generate Your README</h2>
-              <p className="text-gray-400 text-sm">Enter a GitHub username and click Generate — it's free</p>
+              <p className="text-gray-400 text-sm">Enter a GitHub username and click Generate &mdash; it&apos;s free</p>
             </div>
           )}
         </div>
       </section>
 
+      </main>
       {/* Footer */}
-      <footer className="border-t border-white/5 py-8 text-center text-xs text-gray-600">
+      <footer className="border-t border-white/5 py-8 text-center text-xs text-gray-400">
         AutoDev · npx autodev-agent · MIT
         <br />
         <a href="https://buymeacoffee.com/shashwatsrivastava" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-2 hover:text-amber-400 transition">☕ Buy me a coffee</a>

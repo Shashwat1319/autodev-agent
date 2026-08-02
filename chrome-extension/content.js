@@ -35,6 +35,9 @@ function createBadge(username, score) {
   `;
   badge.onmouseover = () => { badge.style.opacity = '0.85'; };
   badge.onmouseout = () => { badge.style.opacity = '1'; };
+  badge.onfocus = () => { badge.style.opacity = '0.85'; };
+  badge.onblur = () => { badge.style.opacity = '1'; };
+  badge.tabIndex = 0;
 
   const letter = document.createElement('span');
   letter.textContent = 'A';
@@ -60,6 +63,35 @@ function createBadge(username, score) {
   return badge;
 }
 
+function showLoadingBadge(container) {
+  const existing = document.getElementById('autodev-badge-container');
+  if (existing) return;
+
+  if (!document.getElementById('autodev-badge-style')) {
+    const style = document.createElement('style');
+    style.id = 'autodev-badge-style';
+    style.textContent = '@keyframes autodevPulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }';
+    document.head.appendChild(style);
+  }
+
+  const wrapper = document.createElement('span');
+  wrapper.id = 'autodev-badge-container';
+  wrapper.style.cssText = 'display: inline-flex; align-items: center; margin-left: 4px;';
+
+  const spinner = document.createElement('span');
+  spinner.textContent = 'A';
+  spinner.style.cssText = `
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px; border-radius: 3px;
+    background: linear-gradient(135deg, #06b6d4, #2563eb);
+    color: #000; font-size: 9px; font-weight: 800;
+    animation: autodevPulse 1s ease-in-out infinite;
+  `;
+
+  wrapper.appendChild(spinner);
+  container.appendChild(wrapper);
+}
+
 function tryInjectBadge(username) {
   const selectors = [
     '.vcard-names',
@@ -80,6 +112,7 @@ function tryInjectBadge(username) {
   }
 
   if (container) {
+    showLoadingBadge(container);
     fetchBadge(username);
   }
 }
@@ -87,11 +120,13 @@ function tryInjectBadge(username) {
 async function fetchBadge(username) {
   try {
     const res = await fetch(`https://autodev-kappa.vercel.app/api/analyze?username=${encodeURIComponent(username)}`);
-    if (!res.ok) return;
-    const data = await res.json();
 
     const container = document.querySelector('#autodev-badge-container');
     if (container) container.remove();
+
+    if (!res.ok) return;
+
+    const data = await res.json();
 
     const wrapper = document.createElement('span');
     wrapper.id = 'autodev-badge-container';

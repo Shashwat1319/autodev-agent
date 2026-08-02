@@ -1,9 +1,12 @@
 import Head from 'next/head';
 import { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import { track } from '@vercel/analytics';
 import { getLangColor } from '../lib/format';
-import { STRIPE_PRO_LINK } from '../lib/config';
 import Layout from '../components/Layout';
-import ShareModal from '../components/ShareModal';
+
+const ShareModal = dynamic(() => import('../components/ShareModal'), { ssr: false });
 
 const features = [
   { icon: '👁️', title: 'File Watcher', desc: 'Detects every change in real-time. No manual staging needed.' },
@@ -37,37 +40,50 @@ export default function Home() {
   const [error, setError] = useState('');
   const [npxCopied, setNpxCopied] = useState(false);
   const [badgeCopied, setBadgeCopied] = useState(false);
+  const [homeBadgeCopied, setHomeBadgeCopied] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [loadingStep, setLoadingStep] = useState('');
+  const usernameRef = useRef(username);
+  usernameRef.current = username;
   const prevResultRef = useRef<any>(null);
+  const abortRef = useRef<AbortController | null>(null);
   useEffect(() => {
     if (result && result !== prevResultRef.current) {
       prevResultRef.current = result;
-      const timer = setTimeout(() => setShowShareModal(true), 600);
-      setTimeout(() => {
+      const shareTimer = setTimeout(() => setShowShareModal(true), 600);
+      const scrollTimer = setTimeout(() => {
         document.getElementById('home-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 300);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(shareTimer); clearTimeout(scrollTimer); };
     }
   }, [result]);
 
   const analyzeProfile = async () => {
-    const u = username.trim();
-    if (!u) return;
+    const u = usernameRef.current.trim();
+    if (!u) { setError('Please enter a GitHub username'); return; }
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setAnalyzing(true);
     setError('');
     setResult(null);
+    setLoadingStep('Fetching profile...');
     try {
-      const res = await fetch(`/api/analyze?username=${encodeURIComponent(u)}`);
+      const res = await fetch(`/api/analyze?username=${encodeURIComponent(u)}`, { signal: controller.signal });
+      setLoadingStep('Calculating score...');
       if (!res.ok) {
-        const e = await res.json();
-        throw new Error(e.error || 'Failed to analyze');
+        let errorMsg = 'Failed to analyze';
+        try { const e = await res.json(); errorMsg = e.error || errorMsg; } catch {}
+        throw new Error(errorMsg);
       }
       const data = await res.json();
       setResult(data);
+      track('profile_analyzed', { username: u, score: data.overallScore ?? null, source: 'home' });
     } catch (err: any) {
-      setError(err.message);
+      if (err.name !== 'AbortError') setError(err.message);
     }
     setAnalyzing(false);
+    setLoadingStep('');
   };
 
   return (
@@ -147,6 +163,7 @@ export default function Home() {
 
       <Layout currentPage="/" showHomeLinks>
 
+      <main id="main-content">
       {/* Hero */}
       <section className="relative pt-28 sm:pt-36 pb-12 sm:pb-20 overflow-hidden">
         <div className="absolute inset-0 bg-grid opacity-40" />
@@ -162,16 +179,16 @@ export default function Home() {
             <span className="gradient-text">Auto-Piloted.</span>
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-8 sm:mb-10 animate-fade-in text-balance">
-            AutoDev watches your files, auto-commits and pushes to GitHub, 
-            and builds a recruiter-ready portfolio — all without lifting a finger.
+            Enter any GitHub username to see their score, badges, and full profile analysis — free.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10 sm:mb-12 animate-fade-in">
-            <div className="flex glass rounded-xl overflow-hidden glow w-full sm:w-auto mx-auto sm:mx-0">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 sm:mb-10 animate-fade-in">
+            <div className="flex glass rounded-xl overflow-hidden glow w-full sm:w-auto mx-auto sm:mx-0 min-w-0">
               <input
                 type="text"
                 placeholder="Enter GitHub username to analyze..."
+                aria-label="GitHub username"
                 className="bg-transparent px-4 sm:px-5 py-3 sm:py-3.5 text-white w-full sm:w-64 outline-none text-sm"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
@@ -182,10 +199,10 @@ export default function Home() {
                 disabled={analyzing}
                 className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-4 sm:px-6 py-3 sm:py-3.5 transition disabled:opacity-50 text-sm whitespace-nowrap"
               >
-                {analyzing ? (
-                  <span className="flex items-center gap-2">
+                  {analyzing ? (
+                  <span className="inline-flex items-center gap-2">
                     <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                    Analyzing
+                    <span>Analyzing</span>
                   </span>
                 ) : 'Analyze'}
               </button>
@@ -197,18 +214,24 @@ export default function Home() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto animate-fade-in">
+          <section aria-label="Quick stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto animate-fade-in">
             {stats.map(s => (
               <div key={s.label} className="glass rounded-xl p-3 sm:p-4 text-center">
                 <div className="text-xs sm:text-sm font-semibold text-cyan-400 mb-0.5">{s.value}</div>
                 <div className="text-[10px] sm:text-xs text-gray-500">{s.label}</div>
               </div>
             ))}
-          </div>
+          </section>
 
           {/* Result */}
+          {analyzing && (
+            <div className="mt-8 max-w-xl mx-auto glass rounded-xl p-4 text-center" role="status" aria-live="polite">
+              <p className="text-cyan-400 text-sm">{loadingStep}</p>
+              <p className="text-[10px] text-gray-500 mt-1">Fetching from GitHub API</p>
+            </div>
+          )}
           {error && (
-            <div className="mt-8 max-w-xl mx-auto glass rounded-xl p-4 border-red-500/20">
+            <div className="mt-8 max-w-xl mx-auto glass rounded-xl p-4 border-red-500/20" role="alert">
               <p className="text-red-400 text-sm">{error}</p>
             </div>
           )}
@@ -222,6 +245,7 @@ export default function Home() {
                     <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-500/10 text-cyan-300">
                       Score: {result.overallScore}
                     </span>
+                    <span className="text-[10px] text-gray-500">70+ Great · 40-69 Okay · &lt;40 Needs Work</span>
                   </div>
                   <p className="text-gray-400 text-sm">{result.bio}</p>
                 </div>
@@ -234,13 +258,16 @@ export default function Home() {
                   ['Repositories', result.totalRepos],
                   ['Stars', result.totalStars],
                   ['Forks', result.totalForks],
-                  ['Repo Volume', result.totalContributions],
+                  ['Code Volume', result.totalContributions],
                 ].map(([label, value]) => (
                   <div key={label as string} className="bg-white/5 rounded-xl p-3 text-center">
                     <div className="text-lg font-bold text-white">{value}</div>
                     <div className="text-[10px] text-gray-500 uppercase tracking-wider">{label as string}</div>
                   </div>
                 ))}
+              </div>
+              <div className="text-center mb-4">
+                <a href="#how-it-works" className="text-[11px] text-gray-500 hover:text-cyan-400 transition">How is this calculated?</a>
               </div>
               {result.languages?.length > 0 && (
                 <div className="mb-4">
@@ -260,7 +287,7 @@ export default function Home() {
                 <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-4">
                   <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">Suggestions</p>
                   <ul className="space-y-1">
-                    {result.recommendations.slice(0, 3).map((r: string, i: number) => (
+                    {result.recommendations.map((r: string, i: number) => (
                       <li key={i} className="text-sm text-gray-400 flex items-start gap-2">
                         <span className="text-amber-400 mt-0.5">→</span>{r}
                       </li>
@@ -291,13 +318,13 @@ export default function Home() {
                     onClick={() => {
                       const text = `[![AutoDev Score](${BASE_URL}/api/badge?username=${result.username})](${BASE_URL}/dashboard?user=${result.username})`;
                       navigator.clipboard.writeText(text).catch(() => {});
-                      const btn = document.getElementById('home-copy-badge');
-                      if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Copy Badge'; }, 2000); }
+                      setHomeBadgeCopied(true);
+                      track('badge_copied', { username: result.username, source: 'home-result' });
+                      setTimeout(() => setHomeBadgeCopied(false), 2000);
                     }}
-                    id="home-copy-badge"
                     className="glass rounded-xl px-4 py-2.5 text-xs text-cyan-400 hover:bg-white/[0.08] transition text-center font-medium"
                   >
-                    Copy Badge
+                    {homeBadgeCopied ? 'Copied!' : 'Copy Badge'}
                   </button>
                 </div>
               </div>
@@ -328,7 +355,7 @@ export default function Home() {
       </section>
 
       {/* How it Works */}
-      <section id="how-it-works" className="section-padding border-t border-white/5">
+      <section id="how-it-works" tabIndex={-1} className="section-padding border-t border-white/5">
         <div className="max-w-7xl mx-auto container-padding">
           <div className="text-center mb-10 sm:mb-16">
             <span className="text-xs font-semibold text-cyan-400 uppercase tracking-[0.2em]">How It Works</span>
@@ -348,11 +375,46 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 glass rounded-xl px-4 sm:px-6 py-3">
               <code className="text-cyan-400 text-sm font-mono">$ npx autodev-agent</code>
               <button
-                onClick={() => { navigator.clipboard.writeText('npx autodev-agent').catch(() => {}); setNpxCopied(true); setTimeout(() => setNpxCopied(false), 2000); }}
+                onClick={() => { navigator.clipboard.writeText('npx autodev-agent').catch(() => {}); setNpxCopied(true); track('npx_copied'); setTimeout(() => setNpxCopied(false), 2000); }}
                 className="text-gray-500 hover:text-white transition text-xs min-w-[36px] text-left"
               >
                 {npxCopied ? 'Copied!' : 'Copy'}
               </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Score Methodology */}
+      <section id="score-methodology" className="section-padding border-t border-white/5">
+        <div className="max-w-3xl mx-auto container-padding text-center">
+          <span className="text-xs font-semibold text-cyan-400 uppercase tracking-[0.2em]">Methodology</span>
+          <h2 className="text-2xl sm:text-3xl font-bold mt-3 mb-4">How Scores Are Calculated</h2>
+          <div className="glass rounded-2xl p-6 sm:p-8 text-left">
+            <div className="grid sm:grid-cols-2 gap-4 text-sm">
+              <div className="bg-white/5 rounded-xl p-4">
+                <div className="text-cyan-400 font-semibold mb-1">Profile Completion</div>
+                <p className="text-gray-400 text-xs">Bio, location, company, and website presence</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-4">
+                <div className="text-cyan-400 font-semibold mb-1">Code Activity</div>
+                <p className="text-gray-400 text-xs">Recent commits, events, and consistency over time</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-4">
+                <div className="text-cyan-400 font-semibold mb-1">Repository Quality</div>
+                <p className="text-gray-400 text-xs">Original repos, descriptions, topics, and structure</p>
+              </div>
+              <div className="bg-white/5 rounded-xl p-4">
+                <div className="text-cyan-400 font-semibold mb-1">Community Impact</div>
+                <p className="text-gray-400 text-xs">Stars, forks, and contributions to the ecosystem</p>
+              </div>
+            </div>
+            <div className="mt-4 text-center">
+              <div className="inline-flex items-center gap-3 text-xs text-gray-500">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> 70+ Great</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500"></span> 40-69 Okay</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span> Below 40 Needs Work</span>
+              </div>
             </div>
           </div>
         </div>
@@ -379,6 +441,7 @@ export default function Home() {
               onClick={() => {
                 navigator.clipboard.writeText(`[![AutoDev Score](${BASE_URL}/api/badge?username=YOUR_USERNAME)](${BASE_URL}/dashboard?user=YOUR_USERNAME)`).catch(() => {});
                 setBadgeCopied(true);
+                track('badge_copied', { source: 'home-hero' });
                 setTimeout(() => setBadgeCopied(false), 2000);
               }}
               className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl transition text-sm"
@@ -426,10 +489,10 @@ export default function Home() {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Ready to Auto-Pilot Your Git?</h2>
           <p className="text-gray-400 mb-6 sm:mb-8">Stop typing git commands. Start building.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/dashboard" className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl transition glow-hover whitespace-nowrap">
+            <Link href="/dashboard" className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl transition glow-hover whitespace-nowrap">
               Open Dashboard
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-            </a>
+            </Link>
             <a href="https://github.com/Shashwat1319/autodev-agent" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 glass text-gray-300 px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl hover:bg-white/[0.08] transition whitespace-nowrap">
               View on GitHub
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -438,6 +501,7 @@ export default function Home() {
         </div>
       </section>
 
+      </main>
       {/* Support */}
       <section className="section-padding border-t border-white/5">
         <div className="text-center">
@@ -451,7 +515,7 @@ export default function Home() {
         </div>
       </section>
 
-      {showShareModal && result && <ShareModal profile={result} onClose={() => setShowShareModal(false)} />}
+      {showShareModal && result && <ShareModal profile={result} onClose={() => { setShowShareModal(false); localStorage.setItem('autodev_dismissed_share', '1'); }} />}
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 sm:py-10">

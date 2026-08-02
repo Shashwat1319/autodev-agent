@@ -1,0 +1,21 @@
+name: 'AutoDev Score Check'
+description: 'Fails CI if a GitHub profile's AutoDev score drops below a threshold.'
+author: 'Shashwatsrivastava'
+branding:
+  icon: 'award'
+  color: 'blue'
+inputs:
+  username:
+    description: 'GitHub username to check'
+    required: true
+  min-score:
+    description: 'Minimum acceptable score (0-100). CI fails below this.'
+    required: false
+    default: '50'
+  api-base:
+    description: 'AutoDev API base URL'
+    required: false
+    default: 'https://autodev-kappa.vercel.app'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import * as Sentry from '@sentry/nextjs';
 import sharp from 'sharp';
 import { rateLimit, validateUsername } from '../../lib/api-utils';
 import { analyzeProfile } from '../../lib/analyze-profile';
@@ -11,7 +12,11 @@ export default async function handler(
 ) {
   const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.headers['x-real-ip']?.toString() || 'unknown';
   const rl = rateLimit({ key: `og:${ip}`, maxRequests: 30, windowMs: 60000 });
-  if (!rl.allowed) return res.status(429).json({ error: 'Too many requests' });
+  if (!rl.allowed) {
+    return res.status(200).setHeader('Content-Type', 'image/svg+xml').setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate').send(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="1200" height="630" fill="#0a0f1e"/><text x="600" y="315" fill="#f44336" font-size="24" text-anchor="middle" font-family="sans-serif">Rate Limited — Try Again Later</text></svg>`
+    );
+  }
 
   const validated = validateUsername(req.query.username);
   if (req.query.username && !validated) return res.status(400).json({ error: 'Invalid username' });
@@ -94,7 +99,8 @@ export default async function handler(
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate');
     res.status(200).send(png);
-  } catch {
+  } catch (err) {
+    Sentry.captureException(err);
     try {
       const domain = BASE_URL.replace('https://', '').replace('http://', '');
       const fallback = `<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
@@ -107,7 +113,8 @@ export default async function handler(
       res.setHeader('Content-Type', 'image/png');
       res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate');
       res.status(200).send(png);
-    } catch {
+    } catch (err2) {
+      Sentry.captureException(err2);
       res.setHeader('Content-Type', 'image/svg+xml');
       res.status(200).send(`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="1200" height="630" fill="#0a0f1e"/><text x="600" y="315" fill="#f44336" font-size="24" text-anchor="middle" font-family="sans-serif">AutoDev OG Image Error</text></svg>`);
     }

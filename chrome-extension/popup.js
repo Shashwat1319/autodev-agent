@@ -22,8 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await fetch(`https://autodev-kappa.vercel.app/api/analyze?username=${encodeURIComponent(username)}`);
       if (!res.ok) {
-        const e = await res.json();
-        throw new Error(e.error || 'Failed to analyze');
+        let errorMsg = 'Failed to analyze';
+        try { const e = await res.json(); errorMsg = e.error || errorMsg; } catch {}
+        throw new Error(errorMsg);
       }
       const data = await res.json();
       showResult(data);
@@ -37,20 +38,41 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showResult(data) {
-    result.innerHTML = `
-      <div class="result">
-        <div class="score">${data.overallScore}/100</div>
-        <div class="score-label">AutoDev Score</div>
-        <div class="stats">
-          <span>📦 <span class="stat-value">${data.totalRepos}</span> repos</span>
-          <span>⭐ <span class="stat-value">${data.totalStars}</span> stars</span>
-          <span>🍴 <span class="stat-value">${data.totalForks}</span> forks</span>
-        </div>
-        <div class="links">
-          <a href="https://autodev-kappa.vercel.app/dashboard?user=${data.username}" target="_blank">View Full Report →</a>
-          <a href="https://autodev-kappa.vercel.app/readme-generator" target="_blank">Generate README →</a>
-        </div>
-      </div>
-    `;
+    result.innerHTML = '';
+    const container = document.createElement('div');
+    container.className = 'result';
+
+    const score = document.createElement('div');
+    score.className = 'score';
+    score.textContent = `${data.overallScore}/100`;
+    container.appendChild(score);
+
+    const scoreLabel = document.createElement('div');
+    scoreLabel.className = 'score-label';
+    scoreLabel.textContent = 'AutoDev Score';
+    container.appendChild(scoreLabel);
+
+    const stats = document.createElement('div');
+    stats.className = 'stats';
+    stats.innerHTML = `<span>📦 <span class="stat-value">${data.totalRepos}</span> repos</span><span>⭐ <span class="stat-value">${data.totalStars}</span> stars</span><span>🍴 <span class="stat-value">${data.totalForks}</span> forks</span>`;
+    container.appendChild(stats);
+
+    const links = document.createElement('div');
+    links.className = 'links';
+
+    const reportLink = document.createElement('a');
+    reportLink.href = `https://autodev-kappa.vercel.app/dashboard?user=${encodeURIComponent(data.username)}`;
+    reportLink.target = '_blank';
+    reportLink.textContent = 'View Full Report →';
+    links.appendChild(reportLink);
+
+    const readmeLink = document.createElement('a');
+    readmeLink.href = `https://autodev-kappa.vercel.app/readme-generator?username=${encodeURIComponent(data.username)}`;
+    readmeLink.target = '_blank';
+    readmeLink.textContent = 'Generate README →';
+    links.appendChild(readmeLink);
+
+    container.appendChild(links);
+    result.appendChild(container);
   }
 });

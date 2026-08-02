@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import * as Sentry from '@sentry/nextjs';
 import { rateLimit, validateUsername } from '../../lib/api-utils';
 import { analyzeProfile } from '../../lib/analyze-profile';
 
@@ -25,7 +26,7 @@ export default async function handler(
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
     res.status(200).json(analysis);
   } catch (err: any) {
-    console.error('Analysis error:', err);
+    Sentry.captureException(err);
     res.status(500).json({ error: err.message || 'Failed to analyze profile' });
   }
 }

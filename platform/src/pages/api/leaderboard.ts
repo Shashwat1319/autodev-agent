@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import * as Sentry from '@sentry/nextjs';
 import { rateLimit, validateUsername } from '../../lib/api-utils';
 import { analyzeProfile } from '../../lib/analyze-profile';
 
@@ -29,7 +30,8 @@ export default async function handler(
 
   const results: any[] = [];
 
-  const batchSize = 5;
+  const hasToken = !!process.env.GITHUB_TOKEN;
+  const batchSize = hasToken ? 10 : 5;
   for (let i = 0; i < usernames.length; i += batchSize) {
     const batch = usernames.slice(i, i + batchSize);
     const promises = batch.map(async (username) => {
@@ -41,7 +43,7 @@ export default async function handler(
     });
     const batchResults = await Promise.all(promises);
     results.push(...batchResults.filter(Boolean));
-    if (i + batchSize < usernames.length) {
+    if (i + batchSize < usernames.length && !hasToken) {
       await new Promise((r) => setTimeout(r, 300));
     }
   }

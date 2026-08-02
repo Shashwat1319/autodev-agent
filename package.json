@@ -1,11 +1,27 @@
 {
   "name": "autodev-monorepo",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "GitHub Profile Analyzer, README Generator, and auto-git CLI agent — analyze, visualize, and automate your developer presence",
+  "keywords": [
+    "github-profile",
+    "readme-generator",
+    "profile-analyzer",
+    "developer-tools",
+    "git-automation",
+    "portfolio",
+    "open-source",
+    "nextjs"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Shashwat1319/autodev-agent"
+  },
+  "homepage": "https://autodev-kappa.vercel.app",
   "scripts": {
     "install:agent": "cd agent && npm install",
     "install:platform": "cd platform && npm install",
-    "install:all": "npm run install:agent & npm run install:platform",
+    "install:all": "npm run install:agent && npm run install:platform",
     "dev:agent": "cd agent && npm run dev",
     "dev:platform": "cd platform && npm run dev",
     "build:agent": "cd agent && npm run build",

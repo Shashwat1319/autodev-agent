@@ -1,6 +1,6 @@
 {
   "name": "autodev-agent",
-  "version": "0.1.4",
+  "version": "1.0.0",
   "description": "Auto-pilot your git. Auto-commits and pushes your code + analyzes your GitHub profile. https://autodev-kappa.vercel.app",
   "main": "dist/agent/src/index.js",
   "bin": {
@@ -8,6 +8,7 @@
   },
   "files": [
     "dist/",
+    "scripts/",
     "README.md",
     "LICENSE"
   ],
@@ -23,7 +24,8 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
-    "start": "node dist/index.js",
+    "postinstall": "node scripts/postinstall.js",
+    "start": "node dist/agent/src/index.js",
     "dev": "ts-node src/index.ts",
     "watch": "ts-node-dev --respawn src/index.ts"
   },

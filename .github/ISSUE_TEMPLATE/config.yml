@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: AutoDev Website
+    url: https://autodev-kappa.vercel.app
+    about: Visit the website
+  - name: npm Package
+    url: https://www.npmjs.com/package/autodev-agent
+    about: CLI agent on npm

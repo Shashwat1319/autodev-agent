@@ -8,6 +8,7 @@ const rankColors = ['#ffd700', '#c0c0c0', '#cd7f32'];
 export default function Leaderboard() {
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [adding, setAdding] = useState(false);
   const fetchIdRef = useRef(0);
@@ -15,6 +16,7 @@ export default function Leaderboard() {
   const fetchLeaderboard = async (extra?: string) => {
     const token = ++fetchIdRef.current;
     setLoading(true);
+    setFetchError('');
     try {
       const q = extra ? `?q=${encodeURIComponent(extra)}` : '';
       const res = await fetch(`/api/leaderboard${q}`);
@@ -23,9 +25,16 @@ export default function Leaderboard() {
         if (token === fetchIdRef.current) {
           setEntries(data.leaderboard || []);
         }
+      } else {
+        if (token === fetchIdRef.current) {
+          setFetchError('Failed to load leaderboard. Please try again.');
+        }
       }
     } catch (e) {
       console.error('Leaderboard fetch error:', e);
+      if (token === fetchIdRef.current) {
+        setFetchError('Network error. Check your connection and try again.');
+      }
     }
     if (token === fetchIdRef.current) {
       setLoading(false);
@@ -90,6 +99,7 @@ export default function Leaderboard() {
 
       <Layout currentPage="/leaderboard" subtitle="Leaderboard">
 
+      <main id="main-content">
       {/* Hero */}
       <section className="pt-28 sm:pt-36 pb-16 text-center">
         <div className="max-w-3xl mx-auto px-6">
@@ -102,6 +112,7 @@ export default function Leaderboard() {
               <input
                 type="text"
                 placeholder="Add your GitHub username..."
+                aria-label="GitHub username to add to leaderboard"
                 className="bg-transparent px-5 py-3 text-white w-full outline-none text-sm"
                 value={inputValue}
                 onChange={e => setInputValue(e.target.value)}
@@ -116,6 +127,7 @@ export default function Leaderboard() {
               {adding ? 'Adding...' : 'Add'}
             </button>
           </div>
+          {fetchError && <p className="text-red-400 text-sm mt-3 glass rounded-xl p-3 inline-block" role="alert">{fetchError}</p>}
         </div>
       </section>
 
@@ -123,8 +135,8 @@ export default function Leaderboard() {
       <section className="pb-20">
         <div className="max-w-4xl mx-auto px-6">
           {loading ? (
-            <div className="text-center py-16">
-              <svg className="animate-spin w-8 h-8 text-cyan-400 mx-auto" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            <div className="text-center py-16" role="status" aria-live="polite">
+              <svg className="animate-spin w-8 h-8 text-cyan-400 mx-auto" viewBox="0 0 24 24" aria-hidden="true"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
               <p className="text-gray-400 mt-4 text-sm animate-pulse">Ranking profiles...</p>
             </div>
           ) : (
@@ -182,7 +194,7 @@ export default function Leaderboard() {
             </div>
           )}
 
-          {!loading && entries.length === 0 && (
+          {!loading && !fetchError && entries.length === 0 && (
             <div className="text-center py-16">
               <p className="text-gray-400 text-sm">No profiles found. Try adding a username!</p>
             </div>
@@ -190,8 +202,9 @@ export default function Leaderboard() {
         </div>
       </section>
 
+      </main>
       {/* Footer */}
-      <footer className="border-t border-white/5 py-8 text-center text-xs text-gray-600">
+      <footer className="border-t border-white/5 py-8 text-center text-xs text-gray-400">
         AutoDev · npx autodev-agent · MIT
         <br />
         <a href="https://buymeacoffee.com/shashwatsrivastava" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-2 hover:text-amber-400 transition">☕ Buy me a coffee</a>

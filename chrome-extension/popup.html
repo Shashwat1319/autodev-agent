@@ -68,11 +68,11 @@ h1 { font-size: 18px; font-weight: 700; margin: 0 0 4px; color: #fff; }
   <h1>AutoDev</h1>
   <p class="subtitle">GitHub Profile Score</p>
   <div class="input-group">
-    <input type="text" id="username-input" placeholder="Enter GitHub username..." />
+    <input type="text" id="username-input" placeholder="Enter GitHub username..." aria-label="GitHub username" />
     <button class="btn" id="analyze-btn">Analyze</button>
   </div>
-  <div id="result"></div>
-  <div id="error" class="error"></div>
+  <div id="result" role="status" aria-live="polite"></div>
+  <div id="error" class="error" role="alert"></div>
   <p class="hint">Scores are public — no login needed</p>
 </div>
 <script src="popup.js"></script>

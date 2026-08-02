@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import * as Sentry from '@sentry/nextjs';
 import { rateLimit, validateUsername } from '../../lib/api-utils';
 import { calculateScore } from '../../lib/analyze-profile';
 import { fetchGitHubJSON, fetchUserAndRepos } from '../../shared/github-client';
@@ -343,6 +344,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
     res.status(200).json({ username: user.login, readme, style });
   } catch (err: any) {
+    Sentry.captureException(err);
     res.status(500).json({ error: err.message || 'Failed to generate README' });
   }
 }

@@ -1,0 +1,20 @@
+# Default owner for all files
+* @Shashwat1319
+
+# Platform (Next.js web app)
+/platform/* @Shashwat1319
+
+# Agent (CLI tool)
+/agent/* @Shashwat1319
+
+# Chrome extension
+/chrome-extension/* @Shashwat1319
+
+# Shared types
+/shared/* @Shashwat1319
+
+# CI/CD
+.github/* @Shashwat1319
+
+# Documentation
+*.md @Shashwat1319
