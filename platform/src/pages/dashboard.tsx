@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { track } from '@vercel/analytics';
-import { getLangColor } from '../lib/format';
+import { getLangColor, getScoreLabel } from '../lib/format';
 import { BASE_URL } from '../lib/config';
 import { isProUnlocked, unlockPro, PRO_PRICE_INR } from '../lib/pro';
 import Layout from '../components/Layout';
@@ -240,6 +240,10 @@ export default function Dashboard() {
                     Score: {profile.overallScore}/100
                   </span>
                 </div>
+                <p className="text-xs text-gray-500 mt-1.5">
+                  {getScoreLabel(profile.overallScore)}
+                  {profile.overallScore >= 70 ? ' — solid profile. Keep it up.' : profile.overallScore >= 40 ? ' — room to improve. The fixes below are your shortcut.' : ' — needs work. Start with the fixes below.'}
+                </p>
                 <p className="text-gray-400 text-sm mt-0.5">{profile.bio}</p>
                 {profile.location && <p className="text-xs text-gray-500 mt-1">📍 {profile.location}</p>}
               </div>

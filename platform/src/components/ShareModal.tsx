@@ -77,17 +77,7 @@ export default function ShareModal({ profile, onClose }: { profile: any; onClose
         <div className="text-6xl font-bold text-cyan-400 mb-2">{profile.overallScore}<span className="text-2xl text-gray-500">/100</span></div>
         <p className="text-xs text-gray-500 mb-6">GitHub Profile Score</p>
 
-        <div className="flex flex-col gap-3 mb-6">
-          <button
-            onClick={handlePro}
-            className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-4 rounded-xl transition text-base"
-          >
-            Get Pro Insights — ₹749
-          </button>
-          <p className="text-[10px] text-gray-500 -mt-2">Prioritized roadmap + repository deep dive, unlocked in your dashboard</p>
-        </div>
-
-        <div className="border-t border-white/5 pt-5">
+        <div className="border-t border-white/5 pt-5 mb-6">
           <p className="text-xs text-gray-500 mb-3 uppercase tracking-wider font-semibold">Share your score</p>
           <div className="flex flex-col sm:flex-row gap-2">
             <button onClick={shareLinkedIn} className="flex-1 glass rounded-xl px-4 py-2.5 text-xs text-white hover:bg-white/[0.08] transition font-medium" style={{ backgroundColor: '#0a66c2' }}>
@@ -100,6 +90,16 @@ export default function ShareModal({ profile, onClose }: { profile: any; onClose
               {badgeCopied ? 'Copied!' : 'Copy Badge'}
             </button>
           </div>
+        </div>
+
+        <div className="border-t border-white/5 pt-5">
+          <button
+            onClick={handlePro}
+            className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-3.5 rounded-xl transition text-sm"
+          >
+            Get Pro Insights — ₹749
+          </button>
+          <p className="text-[10px] text-gray-500 mt-1.5">Prioritized roadmap + repository deep dive, unlocked in your dashboard</p>
         </div>
 
         <button onClick={onClose} className="mt-5 text-xs text-gray-400 hover:text-gray-300 transition">

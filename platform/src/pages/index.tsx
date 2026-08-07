@@ -50,11 +50,17 @@ export default function Home() {
   useEffect(() => {
     if (result && result !== prevResultRef.current) {
       prevResultRef.current = result;
-      const shareTimer = setTimeout(() => setShowShareModal(true), 600);
       const scrollTimer = setTimeout(() => {
         document.getElementById('home-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 300);
-      return () => { clearTimeout(shareTimer); clearTimeout(scrollTimer); };
+      let shareTimer: ReturnType<typeof setTimeout> | undefined;
+      if (!localStorage.getItem('autodev_share_autoopened')) {
+        shareTimer = setTimeout(() => {
+          localStorage.setItem('autodev_share_autoopened', '1');
+          setShowShareModal(true);
+        }, 900);
+      }
+      return () => { if (shareTimer) clearTimeout(shareTimer); clearTimeout(scrollTimer); };
     }
   }, [result]);
 
@@ -175,11 +181,14 @@ export default function Home() {
             v0.1.0 — npx autodev-agent
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight animate-slide-up text-balance">
-            Your Code.<br />
-            <span className="gradient-text">Auto-Piloted.</span>
+            Your GitHub Profile<br />
+            <span className="gradient-text">Has a Score.</span>
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-8 sm:mb-10 animate-fade-in text-balance">
-            Enter any GitHub username to see their score, badges, and full profile analysis — free.
+          <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-3 sm:mb-4 animate-fade-in text-balance">
+            Find yours in 10 seconds — no prompts, no chat with Claude. A free scored profile, badge, and recruiter-ready README.
+          </p>
+          <p className="text-xs sm:text-sm text-cyan-400/70 max-w-xl mx-auto mb-8 sm:mb-10 animate-fade-in">
+            10 seconds vs. a 30-minute AI chat. Type a username → get your score → put it on your README.
           </p>
 
           {/* CTA Buttons */}
@@ -515,7 +524,7 @@ export default function Home() {
         </div>
       </section>
 
-      {showShareModal && result && <ShareModal profile={result} onClose={() => { setShowShareModal(false); localStorage.setItem('autodev_dismissed_share', '1'); }} />}
+      {showShareModal && result && <ShareModal profile={result} onClose={() => setShowShareModal(false)} />}
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 sm:py-10">
