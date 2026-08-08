@@ -1,4 +1,5 @@
-export const PRO_PRICE_INR = '₹749';
+export const PRO_PRICE_INR = '₹299';
+export const PRO_PRICE_STRIKE_INR = '₹749';
 
 export function isProUnlocked(): boolean {
   if (typeof document === 'undefined') return false;

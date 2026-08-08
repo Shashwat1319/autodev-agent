@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { track } from '@vercel/analytics';
 import { getLangColor, getScoreLabel } from '../lib/format';
 import { BASE_URL } from '../lib/config';
-import { isProUnlocked, unlockPro, PRO_PRICE_INR } from '../lib/pro';
+import { isProUnlocked, unlockPro, PRO_PRICE_INR, PRO_PRICE_STRIKE_INR } from '../lib/pro';
 import Layout from '../components/Layout';
 import ShareModal from '../components/ShareModal';
 
@@ -516,9 +516,9 @@ export default function Dashboard() {
                     onClick={openPro}
                     className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold px-8 py-3.5 rounded-xl transition text-sm"
                   >
-                    Unlock Pro Insights — {PRO_PRICE_INR}
+                    Unlock Pro Insights — {PRO_PRICE_INR} <span className="line-through opacity-60 font-medium">{PRO_PRICE_STRIKE_INR}</span>
                   </button>
-                  <p className="text-[10px] text-gray-500 mt-3">Pay once · Lifetime access · No subscription · Razorpay</p>
+                  <p className="text-[10px] text-gray-500 mt-3">Launch offer · Pay once · Lifetime access · No subscription · Razorpay</p>
                 </div>
               </div>
             ) : (

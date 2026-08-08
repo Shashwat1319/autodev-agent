@@ -5,7 +5,7 @@ import { BASE_URL } from '../../../lib/config';
 
 const KEY_ID = process.env.RAZORPAY_KEY_ID || '';
 const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
-const AMOUNT = 74900;
+const AMOUNT = Number(process.env.PRO_PRICE_PAISE) || 29900;
 
 export default async function handler(
   req: NextApiRequest,

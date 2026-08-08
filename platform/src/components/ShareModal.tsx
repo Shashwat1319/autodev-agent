@@ -1,4 +1,5 @@
 import { BASE_URL } from '../lib/config';
+import { PRO_PRICE_INR, PRO_PRICE_STRIKE_INR } from '../lib/pro';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 export default function ShareModal({ profile, onClose }: { profile: any; onClose: () => void }) {
@@ -97,9 +98,9 @@ export default function ShareModal({ profile, onClose }: { profile: any; onClose
             onClick={handlePro}
             className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-3.5 rounded-xl transition text-sm"
           >
-            Get Pro Insights — ₹749
+            Get Pro Insights — {PRO_PRICE_INR} <span className="line-through opacity-60 font-medium">{PRO_PRICE_STRIKE_INR}</span>
           </button>
-          <p className="text-[10px] text-gray-500 mt-1.5">Prioritized roadmap + repository deep dive, unlocked in your dashboard</p>
+          <p className="text-[10px] text-gray-500 mt-1.5">Launch offer · Prioritized roadmap + repository deep dive, unlocked in your dashboard</p>
         </div>
 
         <button onClick={onClose} className="mt-5 text-xs text-gray-400 hover:text-gray-300 transition">
