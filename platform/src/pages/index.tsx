@@ -269,7 +269,7 @@ export default function Home() {
                   Full Report →
                 </a>
               </div>
-              <div className="grid grid-cols-4 gap-3 mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                 {[
                   ['Repositories', result.totalRepos],
                   ['Stars', result.totalStars],

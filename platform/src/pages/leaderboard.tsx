@@ -20,11 +20,12 @@ export default function Leaderboard() {
     try { return JSON.parse(localStorage.getItem('autodev_lb_added') || '[]'); } catch { return []; }
   };
 
-  const fetchLeaderboard = async (extra?: string) => {
+  const fetchLeaderboard = async (extra?: string): Promise<string[]> => {
     const token = ++fetchIdRef.current;
     setLoading(true);
     setFetchError('');
     setAddedMsg('');
+    let resultNames: string[] = [];
     try {
       const q = extra ? `?q=${encodeURIComponent(extra)}` : '';
       const res = await fetch(`/api/leaderboard${q}`);
@@ -32,6 +33,7 @@ export default function Leaderboard() {
         const data = await res.json();
         if (token === fetchIdRef.current) {
           setEntries(data.leaderboard || []);
+          resultNames = (data.leaderboard || []).map((e: any) => e.username);
         }
       } else {
         if (token === fetchIdRef.current) {
@@ -47,6 +49,7 @@ export default function Leaderboard() {
     if (token === fetchIdRef.current) {
       setLoading(false);
     }
+    return resultNames;
   };
 
   useEffect(() => {
@@ -65,26 +68,20 @@ export default function Leaderboard() {
       stored.push(u);
       try { localStorage.setItem('autodev_lb_added', JSON.stringify(stored.slice(-10))); } catch {}
     }
-    const existing = await new Promise<boolean>(resolve => {
-      fetch('/api/leaderboard?q=' + encodeURIComponent(u))
-        .then(r => r.json())
-        .then((d: any) => resolve((d.leaderboard || []).some((e: any) => e.username === u)))
-        .catch(() => resolve(false));
-    });
-    if (!existing) {
-      setFetchError('That username was not found on GitHub \u2014 double-check the spelling.');
-    } else {
+    const added = await fetchLeaderboard(stored.join(','));
+    setInputValue('');
+    setAdding(false);
+    if (added.includes(u)) {
       setFetchError('');
       setHighlightUser(u);
       setAddedMsg('Added! Your profile is on the board below.');
-    }
-    await fetchLeaderboard(stored.join(','));
-    setInputValue('');
-    setAdding(false);
-    if (existing) {
       setTimeout(() => {
         document.getElementById(`lb-${u}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 400);
+    } else {
+      setHighlightUser('');
+      setAddedMsg('');
+      setFetchError('That username was not found on GitHub \u2014 double-check the spelling.');
     }
   };
 

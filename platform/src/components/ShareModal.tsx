@@ -84,7 +84,7 @@ export default function ShareModal({ profile, onClose, continueHref }: { profile
           A
         </div>
 
-        <h2 id={modalTitleId} className="text-xl font-bold text-white mb-1">Your AutoDev Score</h2>
+        <h2 id={modalTitleId} className="text-xl font-bold text-white mb-1">AutoDev Score</h2>
         <p className="text-gray-400 text-sm mb-6">@{profile.username}</p>
 
         <div className="text-6xl font-bold text-cyan-400 mb-2">{profile.overallScore}<span className="text-2xl text-gray-500">/100</span></div>
