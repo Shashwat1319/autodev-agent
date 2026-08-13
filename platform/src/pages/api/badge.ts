@@ -49,7 +49,11 @@ export default async function handler(
   if (!rl.allowed) return res.status(200).setHeader('Content-Type', 'image/svg+xml').send(badgeSVG('Rate Limited', 0, '#f44336', 'classic'));
 
   const { username, style = 'classic' } = req.query;
-  const badgeStyle = ['classic', 'gold', 'dark'].includes(String(style)) ? String(style) : 'classic';
+  const requestedStyle = String(style);
+  const isProRequest = requestedStyle === 'gold' || requestedStyle === 'dark';
+  const cookies = req.headers.cookie || '';
+  const hasPro = cookies.split('; ').some(c => c.startsWith('autodev_pro=1'));
+  const badgeStyle = ['classic', 'gold', 'dark'].includes(requestedStyle) && (!isProRequest || hasPro) ? requestedStyle : 'classic';
   const validated = validateUsername(username);
   if (!validated) return res.status(200).setHeader('Content-Type', 'image/svg+xml').setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate').send(badgeSVG('Invalid User', 0, '#f44336', badgeStyle));
 
