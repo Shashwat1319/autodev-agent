@@ -483,11 +483,11 @@ export default function Home() {
             </div>
             <p className="text-xs text-gray-500 mb-4">
               1. Install <a href="https://www.tampermonkey.net" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Tampermonkey</a> extension (free)<br />
-              2. <a href="https://raw.githubusercontent.com/Shashwat1319/autodev-agent/main/autodev-github-score.user.js" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Click here</a> to install script<br />
+              2. <a href="https://raw.githubusercontent.com/Shashwat1319/autodev-agent/master/autodev-github-score.user.js" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Click here</a> to install script<br />
               3. Visit any GitHub profile → score appears
             </p>
             <a
-              href="https://raw.githubusercontent.com/Shashwat1319/autodev-agent/main/autodev-github-score.user.js"
+              href="https://raw.githubusercontent.com/Shashwat1319/autodev-agent/master/autodev-github-score.user.js"
               target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition text-sm"
             >
