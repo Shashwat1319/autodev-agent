@@ -53,6 +53,8 @@ export default function BadgePage() {
               <img
                 src={`/api/badge?username=${encodeURIComponent(username.trim() || 'Shashwat1319')}`}
                 alt="AutoDev score badge preview"
+                width={178}
+                height={20}
                 className="h-5"
                 loading="lazy"
               />

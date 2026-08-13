@@ -191,7 +191,7 @@ export default function Leaderboard() {
                   </div>
 
                   {/* Avatar */}
-                  <img src={e.avatar} alt={`${e.username}'s avatar`} className="w-10 h-10 rounded-full ring-2 ring-white/10 flex-shrink-0" />
+                  <img src={e.avatar} alt={`${e.username}'s avatar`} width={40} height={40} className="w-10 h-10 rounded-full ring-2 ring-white/10 flex-shrink-0" />
 
                   {/* Name */}
                   <div className="flex-1 min-w-0">

@@ -279,7 +279,7 @@ export default function Dashboard() {
           {/* Profile Header */}
           <div className="glass rounded-2xl p-8 glow">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              <img src={profile.avatar} alt={`${profile.username}'s avatar`} className="w-20 h-20 rounded-full ring-2 ring-cyan-400/50" loading="lazy" />
+              <img src={profile.avatar} alt={`${profile.username}'s avatar`} width={80} height={80} className="w-20 h-20 rounded-full ring-2 ring-cyan-400/50" loading="lazy" />
               <div className="flex-1">
                 <div className="flex items-center gap-3 flex-wrap">
                   <h1 className="text-2xl font-bold">{profile.username}</h1>
@@ -333,6 +333,8 @@ export default function Dashboard() {
               <img
                 src={`/api/badge?username=${profile.username}&style=${badgeStyle}`}
                 alt={`AutoDev Score badge for ${profile.username}`}
+                width={178}
+                height={20}
                 className="h-5 flex-shrink-0"
                 loading="lazy"
               />

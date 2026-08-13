@@ -117,6 +117,7 @@ export default function Home() {
         <meta name="twitter:title" content="AutoDev — Free GitHub Profile Analyzer & README Generator" />
         <meta name="twitter:description" content="Auto-commit, auto-push, auto-analyze your GitHub profile for free. Get your GitHub score, badges, and recruiter-ready README." />
         <meta name="twitter:image" content={`${BASE_URL}/api/og`} />
+        <link rel="preload" as="image" href="/api/badge?username=Shashwat1319" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -255,7 +256,7 @@ export default function Home() {
           {result && (
             <div id="home-result" className="mt-8 glass rounded-2xl p-8 max-w-3xl mx-auto text-left animate-slide-up glow">
               <div className="flex items-center gap-5 mb-6">
-                <img src={result.avatar} alt={`${result.username}'s avatar`} className="w-16 h-16 rounded-full ring-2 ring-cyan-400/50" />
+                <img src={result.avatar} alt={`${result.username}'s avatar`} width={64} height={64} className="w-16 h-16 rounded-full ring-2 ring-cyan-400/50" />
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <h2 className="text-2xl font-bold text-white">{result.username}</h2>
@@ -449,6 +450,8 @@ export default function Home() {
             <img
               src="/api/badge?username=Shashwat1319"
               alt="AutoDev Score Badge"
+              width={178}
+              height={20}
               className="h-5 mx-auto mb-6"
             />
             <div className="glass rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs text-gray-400 font-mono mb-4 break-all select-all overflow-x-auto">
