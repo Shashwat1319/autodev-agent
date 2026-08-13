@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { track } from '@vercel/analytics';
 import { getLangColor } from '../lib/format';
 import Layout from '../components/Layout';
+import { HOMEPAGE_FAMOUS } from '../lib/top-dev-usernames';
 
 const ShareModal = dynamic(() => import('../components/ShareModal'), { ssr: false });
 
@@ -535,19 +536,35 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 sm:py-10">
-        <div className="max-w-7xl mx-auto container-padding flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-xs font-bold text-black">A</div>
-            <span className="text-sm text-gray-500">AutoDev</span>
+        <div className="max-w-7xl mx-auto container-padding">
+          <div className="flex flex-col items-center gap-3 mb-6">
+            <span className="text-xs text-gray-600">Popular GitHub profile scores</span>
+            <div className="flex flex-wrap justify-center gap-2">
+              {HOMEPAGE_FAMOUS.map(u => (
+                <Link
+                  key={u}
+                  href={`/github-profile-score/${encodeURIComponent(u)}`}
+                  className="text-xs text-gray-500 hover:text-cyan-400 transition"
+                >
+                  {u}
+                </Link>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-4 sm:gap-6 text-xs text-gray-500 flex-wrap justify-center">
-            <span>MIT License</span>
-            <span>·</span>
-            <span>Built with ❤️</span>
-            <span>·</span>
-            <a href="https://github.com/Shashwat1319/autodev-agent" className="hover:text-cyan-400 transition">GitHub</a>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-xs font-bold text-black">A</div>
+              <span className="text-sm text-gray-500">AutoDev</span>
+            </div>
+            <div className="flex items-center gap-4 sm:gap-6 text-xs text-gray-500 flex-wrap justify-center">
+              <span>MIT License</span>
+              <span>·</span>
+              <span>Built with ❤️</span>
+              <span>·</span>
+              <a href="https://github.com/Shashwat1319/autodev-agent" className="hover:text-cyan-400 transition">GitHub</a>
+            </div>
+            <div className="text-xs text-gray-600">npx autodev-agent</div>
           </div>
-          <div className="text-xs text-gray-600">npx autodev-agent</div>
         </div>
       </footer>
       </Layout>
