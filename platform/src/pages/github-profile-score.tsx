@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Layout from '../components/Layout';
 import { BASE_URL } from '../lib/config';
+import { HOMEPAGE_FAMOUS } from '../lib/top-dev-usernames';
 
 const faqs = [
   {
@@ -112,6 +113,24 @@ export default function GithubScoreSEO() {
                   <p className="text-gray-400 text-sm">{desc}</p>
                 </div>
               ))}
+            </div>
+
+            <div className="glass rounded-2xl p-6 sm:p-8 mb-12">
+              <h2 className="text-2xl font-bold text-white mb-2">Famous GitHub profiles, scored</h2>
+              <p className="text-gray-400 text-sm mb-5">
+                See the AutoDev score of well-known developers and open-source creators:
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {HOMEPAGE_FAMOUS.map(u => (
+                  <Link
+                    key={u}
+                    href={`/github-profile-score/${encodeURIComponent(u)}`}
+                    className="bg-white/5 hover:bg-white/10 rounded-xl px-4 py-3 text-sm text-gray-300 hover:text-white transition truncate"
+                  >
+                    {u}
+                  </Link>
+                ))}
+              </div>
             </div>
 
             <div className="glass rounded-2xl p-6 sm:p-8 mb-12">

@@ -37,6 +37,32 @@ export default function ProfileTipsPage() {
             }),
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: [
+                {
+                  '@type': 'Question',
+                  name: 'How can I make my GitHub profile look good?',
+                  acceptedAnswer: { '@type': 'Answer', text: 'Add a clear bio, a profile README, pin your best repositories with descriptions, write a README for each repo, add topics, and keep a consistent commit streak. AutoDev scores your profile out of 100 and lists the exact improvements that would raise it.' },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'What do recruiters look for on a GitHub profile?',
+                  acceptedAnswer: { '@type': 'Answer', text: 'Recruiters look for a complete profile (bio, photo, links), original projects with descriptions and READMEs, consistent contribution activity, and clear proof of your main language skills.' },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Does a GitHub README help with recruiters?',
+                  acceptedAnswer: { '@type': 'Answer', text: 'Yes. A profile README is the first thing many recruiters read on your profile. A well-structured one summarizes who you are, your skills, and your featured work in under a minute.' },
+                },
+              ],
+            }),
+          }}
+        />
       </Head>
 
       <Layout currentPage="/github-profile-tips" subtitle="Profile Tips">

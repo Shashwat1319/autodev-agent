@@ -133,6 +133,32 @@ export default function ReadmeGenerator() {
             }),
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: [
+                {
+                  '@type': 'Question',
+                  name: 'Is the GitHub README generator free?',
+                  acceptedAnswer: { '@type': 'Answer', text: 'Yes. Generate a GitHub profile README from your public GitHub data for free — three styles (Professional, Minimal, Recruiter), preview, copy, or download. No sign-up required.' },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'How do I put the generated README on my GitHub profile?',
+                  acceptedAnswer: { '@type': 'Answer', text: 'Create a repository with the same name as your GitHub username (e.g. username/username), add the generated README.md as the repository README, and it automatically appears on your GitHub profile.' },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'What should a GitHub profile README include?',
+                  acceptedAnswer: { '@type': 'Answer', text: 'A good profile README includes a short intro and bio, your tech stack, featured repositories, links to your website or socials, and optionally your GitHub stats or score badge. AutoDev generates all of this automatically from your public GitHub data.' },
+                },
+              ],
+            }),
+          }}
+        />
       </Head>
 
       <Layout currentPage="/readme-generator" subtitle="README Generator">
