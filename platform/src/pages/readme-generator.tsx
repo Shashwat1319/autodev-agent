@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { track } from '@vercel/analytics';
 import { BASE_URL } from '../lib/config';
+import { isValidUsernameFormat, USERNAME_FORMAT_ERROR } from '../lib/username';
 import Layout from '../components/Layout';
 
 const STYLES = [
@@ -34,6 +35,7 @@ export default function ReadmeGenerator() {
   const generatePreview = async (s?: string, overrideUser?: string) => {
     const targetUser = (overrideUser || username).trim();
     if (!targetUser) { setError('Please enter a GitHub username'); return; }
+    if (!isValidUsernameFormat(targetUser)) { setError(USERNAME_FORMAT_ERROR); return; }
     const activeStyle = s || style;
     if (cached[activeStyle]) { setReadme(cached[activeStyle]); if (s) setStyle(s); return; }
     if (s) setStyle(s);

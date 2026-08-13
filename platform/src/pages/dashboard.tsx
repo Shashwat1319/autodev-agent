@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { track } from '@vercel/analytics';
 import { getLangColor, getScoreLabel } from '../lib/format';
 import { BASE_URL } from '../lib/config';
-import { isProUnlocked, unlockPro, PRO_PRICE_INR, PRO_PRICE_STRIKE_INR } from '../lib/pro';
+import { isProUnlocked, unlockPro, markProAttempt, isProAttempt, clearProAttempt, PRO_PRICE_INR, PRO_PRICE_STRIKE_INR } from '../lib/pro';
+import { isValidUsernameFormat, USERNAME_FORMAT_ERROR } from '../lib/username';
 import Layout from '../components/Layout';
 import ShareModal from '../components/ShareModal';
 
@@ -30,30 +31,35 @@ export default function Dashboard() {
   const [proUnlocked, setProUnlocked] = useState(false);
   const [badgeStyle, setBadgeStyle] = useState('classic');
   const [proEmail, setProEmail] = useState('');
+  const [verifyingPro, setVerifyingPro] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   useEffect(() => {
     if (profile && !showShareModal) {
-      const dismissed = localStorage.getItem('autodev_dismissed_share');
-      if (!dismissed) {
-        const timer = setTimeout(() => setShowShareModal(true), 600);
+      let autoopened = false;
+      try { autoopened = !!localStorage.getItem('autodev_share_autoopened'); } catch {}
+      if (!autoopened) {
+        const timer = setTimeout(() => {
+          try { localStorage.setItem('autodev_share_autoopened', '1'); } catch {}
+          setShowShareModal(true);
+        }, 2500);
         return () => clearTimeout(timer);
       }
     }
-  }, [profile]);
+  }, [profile, showShareModal]);
   useEffect(() => {
     const raw = router.query.user;
     const userParam = Array.isArray(raw) ? raw[0] : raw;
-    const user = userParam || localStorage.getItem('autodev_username') || '';
-    if (user && user !== username) {
-      setUsername(user);
-      setInputValue(user);
-      fetchProfile(user);
+    if (userParam && userParam !== username) {
+      setUsername(userParam);
+      setInputValue(userParam);
+      fetchProfile(userParam);
     }
   }, [router.query.user]);
 
   const fetchProfile = async (user?: string) => {
-    const target = user || inputValue;
-    if (!target.trim()) return;
+    const target = (user || inputValue).trim();
+    if (!target) { setError('Please enter a GitHub username'); return; }
+    if (!isValidUsernameFormat(target)) { setError('That doesn\u2019t look like a GitHub username \u2014 letters, numbers, dashes and underscores only, no spaces.'); return; }
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -62,7 +68,6 @@ export default function Dashboard() {
     setUsername(target);
     setLoadingStep('Fetching profile...');
     try {
-      localStorage.setItem('autodev_username', target);
       const res = await fetch(`/api/analyze?username=${encodeURIComponent(target)}`, { signal: controller.signal });
       setLoadingStep('Calculating score...');
       if (!res.ok) {
@@ -81,14 +86,48 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    if (router.query.pro === '1') {
+      track('pro_nav_clicked');
+      const t = setTimeout(() => {
+        const el = document.getElementById('pro-insights');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 500);
+      return () => clearTimeout(t);
+    }
+  }, [router.query.pro]);
+
+  useEffect(() => {
     const q = router.query;
     if (q.pro_unlocked === '1') {
-      unlockPro();
-      setProUnlocked(true);
-      const rest: Record<string, string> = {};
-      for (const [k, v] of Object.entries(q)) if (k !== 'pro_unlocked') rest[k] = String(v);
-      router.replace({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
-      track('pro_unlocked');
+      const str = (v: unknown) => (typeof v === 'string' ? v : Array.isArray(v) ? v[0] ?? '' : '');
+      const paymentLinkId = str(q.razorpay_payment_link_id);
+      const finish = (unlocked: boolean, msg?: string) => {
+        if (unlocked) { unlockPro(); setProUnlocked(true); track('pro_unlocked'); }
+        if (msg) setError(msg);
+        const rest: Record<string, string> = {};
+        for (const [k, v] of Object.entries(q)) if (!['pro_unlocked', 'link', 'razorpay_payment_link_id', 'razorpay_payment_link_reference_id', 'razorpay_payment_link_status', 'razorpay_payment_id', 'razorpay_signature'].includes(k)) rest[k] = String(v);
+        router.replace({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
+      };
+      if (paymentLinkId) {
+        const params = new URLSearchParams({
+          link: paymentLinkId,
+          ref: str(q.razorpay_payment_link_reference_id),
+          status: str(q.razorpay_payment_link_status),
+          payment: str(q.razorpay_payment_id),
+          sig: str(q.razorpay_signature),
+        });
+        setVerifyingPro(true);
+        fetch(`/api/pro/verify?${params.toString()}`)
+          .then(r => r.json())
+          .then((d: any) => finish(d?.paid === true, 'Payment not completed \u2014 Pro stays locked. If you paid, reply to your receipt email for help.'))
+          .catch(() => finish(false, 'Couldn\u2019t verify your payment \u2014 try again in a minute.'))
+          .finally(() => setVerifyingPro(false));
+      } else if (isProAttempt()) {
+        clearProAttempt();
+        finish(true);
+      } else {
+        finish(false, 'Payment not detected \u2014 Pro stays locked. If you paid, reply to your email receipt for help.');
+      }
     } else if (isProUnlocked()) {
       setProUnlocked(true);
     }
@@ -96,6 +135,7 @@ export default function Dashboard() {
 
   const openPro = async () => {
     track('pro_cta_clicked', { username: profile?.username });
+    setError('');
     const btn = document.getElementById('pro-pay-btn') as HTMLButtonElement | null;
     if (btn) { btn.disabled = true; btn.textContent = 'Opening payment...'; }
     try {
@@ -104,10 +144,17 @@ export default function Dashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: profile?.username, email: proEmail }),
       });
-      const data = await res.json();
-      if (data.url) { window.location.href = data.url; return; }
-      if (data.demo && profile?.username) router.push(`/dashboard?user=${profile.username}&pro_unlocked=1`);
-    } catch {}
+      let data: any = null;
+      try { data = await res.json(); } catch {}
+      if (data?.url) {
+        markProAttempt(profile?.username || '');
+        window.location.href = data.url;
+        return;
+      }
+      throw new Error(data?.error || 'Payment setup failed. Please try again in a minute.');
+    } catch (err: any) {
+      setError(err.message || 'Payment setup failed. Please try again in a minute.');
+    }
     if (btn) { btn.disabled = false; btn.textContent = `Unlock Pro Insights — ${PRO_PRICE_INR}`; }
   };
 
@@ -479,9 +526,12 @@ export default function Dashboard() {
           </div>
 
           {/* Pro Insights */}
-          <div className="glass rounded-2xl p-8 relative overflow-hidden">
+          <div id="pro-insights" className="glass rounded-2xl p-8 relative overflow-hidden scroll-mt-28">
             {!proUnlocked ? (
               <div className="relative">
+                {verifyingPro && (
+                  <p className="text-xs text-amber-400 mb-4 animate-pulse" role="status">Verifying your payment…</p>
+                )}
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-lg flex-shrink-0">🔒</div>
                   <div>
@@ -645,7 +695,7 @@ export default function Dashboard() {
           ☕ Buy me a coffee
         </a>
       </footer>
-      {showShareModal && <ShareModal profile={profile} onClose={() => { setShowShareModal(false); localStorage.setItem('autodev_dismissed_share', '1'); }} />}
+      {showShareModal && <ShareModal profile={profile} onClose={() => setShowShareModal(false)} />}
       </Layout>
     </>
   );

@@ -32,6 +32,7 @@ const stats = [
 ];
 
 import { BASE_URL } from '../lib/config';
+import { isValidUsernameFormat, USERNAME_FORMAT_ERROR } from '../lib/username';
 
 export default function Home() {
   const [username, setUsername] = useState('');
@@ -54,11 +55,13 @@ export default function Home() {
         document.getElementById('home-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 300);
       let shareTimer: ReturnType<typeof setTimeout> | undefined;
-      if (!localStorage.getItem('autodev_share_autoopened')) {
+      let autoOpened = false;
+      try { autoOpened = !!localStorage.getItem('autodev_share_autoopened'); } catch {}
+      if (!autoOpened) {
         shareTimer = setTimeout(() => {
-          localStorage.setItem('autodev_share_autoopened', '1');
+          try { localStorage.setItem('autodev_share_autoopened', '1'); } catch {}
           setShowShareModal(true);
-        }, 900);
+        }, 2500);
       }
       return () => { if (shareTimer) clearTimeout(shareTimer); clearTimeout(scrollTimer); };
     }
@@ -67,6 +70,7 @@ export default function Home() {
   const analyzeProfile = async () => {
     const u = usernameRef.current.trim();
     if (!u) { setError('Please enter a GitHub username'); return; }
+    if (!isValidUsernameFormat(u)) { setError(USERNAME_FORMAT_ERROR); return; }
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -279,7 +283,7 @@ export default function Home() {
                 ))}
               </div>
               <div className="text-center mb-4">
-                <a href="#how-it-works" className="text-[11px] text-gray-500 hover:text-cyan-400 transition">How is this calculated?</a>
+                <a href="#score-methodology" className="text-[11px] text-gray-500 hover:text-cyan-400 transition">How is this calculated?</a>
               </div>
               {result.languages?.length > 0 && (
                 <div className="mb-4">
@@ -527,7 +531,7 @@ export default function Home() {
         </div>
       </section>
 
-      {showShareModal && result && <ShareModal profile={result} onClose={() => setShowShareModal(false)} />}
+      {showShareModal && result && <ShareModal profile={result} continueHref={`/dashboard?user=${result.username}`} onClose={() => setShowShareModal(false)} />}
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 sm:py-10">

@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { useState, useEffect, useRef } from 'react';
 import { BASE_URL } from '../lib/config';
+import { isValidUsernameFormat, USERNAME_FORMAT_ERROR } from '../lib/username';
 import Layout from '../components/Layout';
 
 const rankColors = ['#ffd700', '#c0c0c0', '#cd7f32'];
@@ -11,12 +12,19 @@ export default function Leaderboard() {
   const [fetchError, setFetchError] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [adding, setAdding] = useState(false);
+  const [addedMsg, setAddedMsg] = useState('');
+  const [highlightUser, setHighlightUser] = useState('');
   const fetchIdRef = useRef(0);
+
+  const getStoredAdded = (): string[] => {
+    try { return JSON.parse(localStorage.getItem('autodev_lb_added') || '[]'); } catch { return []; }
+  };
 
   const fetchLeaderboard = async (extra?: string) => {
     const token = ++fetchIdRef.current;
     setLoading(true);
     setFetchError('');
+    setAddedMsg('');
     try {
       const q = extra ? `?q=${encodeURIComponent(extra)}` : '';
       const res = await fetch(`/api/leaderboard${q}`);
@@ -42,16 +50,42 @@ export default function Leaderboard() {
   };
 
   useEffect(() => {
-    fetchLeaderboard();
+    const stored = getStoredAdded();
+    if (stored.length > 0) fetchLeaderboard(stored.join(','));
+    else fetchLeaderboard();
   }, []);
 
   const addProfile = async () => {
     const u = inputValue.trim();
-    if (!u) return;
+    if (!u) { setFetchError('Please enter a GitHub username'); return; }
+    if (!isValidUsernameFormat(u)) { setFetchError(USERNAME_FORMAT_ERROR); return; }
     setAdding(true);
-    await fetchLeaderboard(u);
+    const stored = getStoredAdded();
+    if (!stored.includes(u)) {
+      stored.push(u);
+      try { localStorage.setItem('autodev_lb_added', JSON.stringify(stored.slice(-10))); } catch {}
+    }
+    const existing = await new Promise<boolean>(resolve => {
+      fetch('/api/leaderboard?q=' + encodeURIComponent(u))
+        .then(r => r.json())
+        .then((d: any) => resolve((d.leaderboard || []).some((e: any) => e.username === u)))
+        .catch(() => resolve(false));
+    });
+    if (!existing) {
+      setFetchError('That username was not found on GitHub \u2014 double-check the spelling.');
+    } else {
+      setFetchError('');
+      setHighlightUser(u);
+      setAddedMsg('Added! Your profile is on the board below.');
+    }
+    await fetchLeaderboard(stored.join(','));
     setInputValue('');
     setAdding(false);
+    if (existing) {
+      setTimeout(() => {
+        document.getElementById(`lb-${u}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 400);
+    }
   };
 
   return (
@@ -105,7 +139,7 @@ export default function Leaderboard() {
         <div className="max-w-3xl mx-auto px-6">
           <span className="text-xs font-semibold text-cyan-400 uppercase tracking-[0.2em]">Rankings</span>
           <h1 className="text-4xl font-bold mt-3 mb-4">Top GitHub Profiles</h1>
-          <p className="text-gray-400 max-w-xl mx-auto">Ranked by AutoDev Score. Add your username to see where you stand.</p>
+          <p className="text-gray-400 max-w-xl mx-auto">Ranked by AutoDev Score. Add your username to see where you stand — it stays on the board for your next visit.</p>
 
           <div className="flex gap-3 max-w-md mx-auto mt-8">
             <div className="flex-1 glass rounded-xl overflow-hidden flex">
@@ -128,6 +162,7 @@ export default function Leaderboard() {
             </button>
           </div>
           {fetchError && <p className="text-red-400 text-sm mt-3 glass rounded-xl p-3 inline-block" role="alert">{fetchError}</p>}
+          {addedMsg && <p className="text-green-400 text-sm mt-3 glass rounded-xl p-3 inline-block" role="status">{addedMsg}</p>}
         </div>
       </section>
 
@@ -145,7 +180,8 @@ export default function Leaderboard() {
               {entries.map((e, i) => (
                 <div
                   key={e.username}
-                  className={`glass rounded-xl p-4 flex items-center gap-4 transition hover:border-cyan-400/20 ${i < 3 ? 'glow' : ''}`}
+                  id={`lb-${e.username}`}
+                  className={`glass rounded-xl p-4 flex items-center gap-4 transition hover:border-cyan-400/20 scroll-mt-32 ${i < 3 ? 'glow' : ''} ${highlightUser === e.username ? 'ring-1 ring-cyan-400/60' : ''}`}
                   style={i < 3 ? { borderColor: rankColors[i] + '33' } : {}}
                 >
                   {/* Rank */}

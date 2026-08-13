@@ -29,10 +29,11 @@ export default async function handler(
     amount: AMOUNT,
     currency: 'INR',
     description: 'AutoDev Pro Insights — lifetime access',
+    reference_id: `ad-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
     callback_url: `${BASE_URL}/dashboard?user=${encodeURIComponent(username)}&pro_unlocked=1`,
     callback_method: 'get',
     notify: { email: true },
-    notes: { source: 'autodev-dashboard' },
+    notes: { source: 'autodev-dashboard', username },
   };
   if (email) payload.customer = { email };
 

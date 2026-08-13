@@ -270,8 +270,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!rl.allowed) return res.status(429).json({ error: `Too many requests. Try again in ${Math.ceil(rl.resetIn / 1000)}s.` });
 
   const { username, style = 'professional' } = req.method === 'POST' ? req.body : req.query;
+  if (typeof username !== 'string' || username.trim() === '') {
+    return res.status(400).json({ error: 'Please enter a GitHub username' });
+  }
   const validated = validateUsername(username);
-  if (!validated) return res.status(400).json({ error: 'Username is required' });
+  if (!validated) return res.status(400).json({ error: 'That doesn\u2019t look like a GitHub username \u2014 letters, numbers, dashes and underscores only, no spaces.' });
 
   try {
     const { user, repoList, totalStars, totalForks } = await fetchUserAndRepos(validated);

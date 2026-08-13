@@ -4,6 +4,7 @@ import { BASE_URL } from '../lib/config';
 import Layout from '../components/Layout';
 
 export default function BadgePage() {
+  const [username, setUsername] = useState('Shashwat1319');
   const [copied, setCopied] = useState(false);
 
   return (
@@ -35,11 +36,23 @@ export default function BadgePage() {
               Show your AutoDev score on your GitHub profile. The badge updates automatically —
               add it once, it stays fresh forever.
             </p>
+            <div className="flex gap-3 max-w-md mx-auto mb-6">
+              <div className="flex-1 glass rounded-xl overflow-hidden flex">
+                <input
+                  type="text"
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  placeholder="Your GitHub username"
+                  aria-label="Your GitHub username"
+                  className="bg-transparent px-4 py-2.5 text-white w-full outline-none text-sm"
+                />
+              </div>
+            </div>
             <div className="inline-flex items-center gap-3 glass rounded-xl px-5 py-3 mb-8">
               <span className="text-xs text-gray-400">Your badge:</span>
               <img
-                src={`/api/badge?username=Shashwat1319`}
-                alt="Example AutoDev score badge"
+                src={`/api/badge?username=${encodeURIComponent(username.trim() || 'Shashwat1319')}`}
+                alt="AutoDev score badge preview"
                 className="h-5"
                 loading="lazy"
               />
@@ -60,11 +73,11 @@ export default function BadgePage() {
             </ol>
             <div className="mt-3 flex gap-2">
               <div className="flex-1 glass rounded-lg px-4 py-3 text-xs text-gray-400 font-mono truncate select-all">
-                {`[![AutoDev Score](https://autodev-kappa.vercel.app/api/badge?username=YOUR_USERNAME)](https://autodev-kappa.vercel.app/dashboard?user=YOUR_USERNAME)`}
+                {`[![AutoDev Score](${BASE_URL}/api/badge?username=YOUR_USERNAME)](${BASE_URL}/dashboard?user=YOUR_USERNAME)`}
               </div>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(`[![AutoDev Score](https://autodev-kappa.vercel.app/api/badge?username=YOUR_USERNAME)](https://autodev-kappa.vercel.app/dashboard?user=YOUR_USERNAME)`).catch(() => {});
+                  navigator.clipboard.writeText(`[![AutoDev Score](${BASE_URL}/api/badge?username=YOUR_USERNAME)](${BASE_URL}/dashboard?user=YOUR_USERNAME)`).catch(() => {});
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }}

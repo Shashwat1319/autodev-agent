@@ -64,7 +64,7 @@ export default function ProfileTipsPage() {
                 ['Pin Your Best Repos (2 min)', 'Visitors see pinned repos before anything else. Pin the 6 projects that represent your best work — not your most recent commits.'],
                 ['Describe Every Repo (5 min)', 'A one-line description in every repo. AutoDev checks for this, and so do humans. "My awesome project" is a description. Blank is not.'],
                 ['Add a README to Top Repos (15 min)', 'Repos with READMEs get more stars, more forks, and more trust. At minimum, explain what it does and how to install it.'],
-                ['Add a Score Badge (1 min)', 'A live badge like [![AutoDev Score](https://autodev-kappa.vercel.app/api/badge?username=YOUR_USERNAME)](https://autodev-kappa.vercel.app/dashboard?user=YOUR_USERNAME) shows activity at a glance and links to your full stats.'],
+                [`Add a Score Badge (1 min)`, `A live badge like [![AutoDev Score](${BASE_URL}/api/badge?username=YOUR_USERNAME)](${BASE_URL}/dashboard?user=YOUR_USERNAME) shows activity at a glance and links to your full stats.`],
                 ['Use the Right Profile Picture (2 min)', 'A clear face or logo photo. Not the default identicon. Trust matters — GitHub is a social platform.'],
                 ['Keep Activity Consistent (habit)', 'Contribution streaks read as reliability. 15 minutes of small fixes daily beats a weekend of giant commits.'],
                 ['Show Off Your Languages (5 min)', 'GitHub auto-shows your top languages. Make sure your profile actually reflects what you want to be hired for.'],

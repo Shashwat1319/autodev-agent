@@ -12,8 +12,13 @@ export default async function handler(
   if (!rl.allowed) return res.status(429).json({ error: `Too many requests. Try again in ${Math.ceil(rl.resetIn / 1000)}s.` });
 
   const { username } = req.query;
+  if (typeof username !== 'string' || username.trim() === '') {
+    return res.status(400).json({ error: 'Please enter a GitHub username' });
+  }
   const validated = validateUsername(username);
-  if (!validated) return res.status(400).json({ error: 'Username is required' });
+  if (!validated) {
+    return res.status(400).json({ error: 'That doesn\u2019t look like a GitHub username \u2014 letters, numbers, dashes and underscores only, no spaces.' });
+  }
 
   if (!process.env.GITHUB_TOKEN && process.env.NODE_ENV === 'development') {
     console.warn('⚠️ GITHUB_TOKEN not set — GitHub API rate limited to 60 req/hr');

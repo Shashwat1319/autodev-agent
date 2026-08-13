@@ -68,7 +68,7 @@ export default function GithubScoreSEO() {
       </Head>
 
       <Layout currentPage="/github-profile-score" showHomeLinks>
-        <main className="relative pt-24 sm:pt-32 pb-16 overflow-hidden">
+        <main id="main-content" className="relative pt-24 sm:pt-32 pb-16 overflow-hidden">
           <div className="absolute inset-0 bg-grid opacity-40" />
           <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-cyan-500/10 rounded-full blur-[120px]" />
           <div className="relative max-w-4xl mx-auto px-4 sm:px-6">

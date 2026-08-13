@@ -36,20 +36,12 @@ export async function fetchGitHubJSON(url: string): Promise<any> {
   try {
     res = await fetchWithRetry(url, { headers });
   } catch {
-    return null;
+    throw new Error('GitHub is having a moment \u2014 try again in a minute.');
   }
-  if (res.status === 403) {
-    const remaining = res.headers.get('X-RateLimit-Remaining');
-    const reset = res.headers.get('X-RateLimit-Reset');
-    const msg = reset
-      ? `GitHub API rate limit reached. Resets at ${new Date(Number(reset) * 1000).toLocaleTimeString()}. ${!getToken() ? 'Set a GITHUB_TOKEN for unlimited access.' : ''}`
-      : `GitHub API rate limit exceeded. ${!getToken() ? 'Set a GITHUB_TOKEN for 5000 req/hr.' : 'Try again later.'}`;
-    throw new Error(msg);
-  }
-  if (res.status === 429) {
+  if (res.status === 403 || res.status === 429) {
     const msg = !getToken()
-      ? 'GitHub API rate limit exceeded (60 req/hr). Set a GITHUB_TOKEN for 5000 req/hr.'
-      : 'GitHub API rate limit exceeded. Try again later.';
+      ? 'GitHub is rate-limiting us right now \u2014 try again in about an hour.'
+      : 'GitHub is rate-limiting us right now \u2014 try again in a minute.';
     throw new Error(msg);
   }
   if (!res.ok) return null;

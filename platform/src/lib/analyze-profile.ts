@@ -26,8 +26,9 @@ export async function analyzeProfile(username: string): Promise<ProfileAnalysis 
   ]);
   const { user, repos, repoList, totalStars, totalForks } = userReposResult;
   if (!user) return null;
-  if (!repos) return null;
-  if (!events) return null;
+  if (!repos || !events) {
+    throw new Error('GitHub is having a moment \u2014 try again in a minute.');
+  }
 
   const eventList = Array.isArray(events) ? events : [];
 

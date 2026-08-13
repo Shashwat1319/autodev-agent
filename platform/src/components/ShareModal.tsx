@@ -1,10 +1,12 @@
 import { BASE_URL } from '../lib/config';
-import { PRO_PRICE_INR, PRO_PRICE_STRIKE_INR } from '../lib/pro';
+import { PRO_PRICE_INR, PRO_PRICE_STRIKE_INR, markProAttempt } from '../lib/pro';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-export default function ShareModal({ profile, onClose }: { profile: any; onClose: () => void }) {
+export default function ShareModal({ profile, onClose, continueHref }: { profile: any; onClose: () => void; continueHref?: string }) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [badgeCopied, setBadgeCopied] = useState(false);
+  const [proBusy, setProBusy] = useState(false);
+  const [proError, setProError] = useState('');
 
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
@@ -43,16 +45,26 @@ export default function ShareModal({ profile, onClose }: { profile: any; onClose
     setTimeout(() => setBadgeCopied(false), 2000);
   };
   const handlePro = async () => {
+    setProBusy(true);
+    setProError('');
     try {
       const res = await fetch('/api/pro/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: profile.username }),
       });
-      const data = await res.json();
-      if (data.url) { window.location.href = data.url; return; }
-      if (data.demo) window.location.href = `/dashboard?user=${profile.username}&pro_unlocked=1`;
-    } catch {}
+      let data: any = null;
+      try { data = await res.json(); } catch {}
+      if (data?.url) {
+        markProAttempt(profile.username);
+        window.location.href = data.url;
+        return;
+      }
+      setProError(data?.error || 'Payment setup failed. Please try again in a minute.');
+    } catch {
+      setProError('Payment setup failed. Please try again in a minute.');
+    }
+    setProBusy(false);
   };
 
   const modalTitleId = 'share-modal-title';
@@ -96,16 +108,22 @@ export default function ShareModal({ profile, onClose }: { profile: any; onClose
         <div className="border-t border-white/5 pt-5">
           <button
             onClick={handlePro}
-            className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-3.5 rounded-xl transition text-sm"
+            disabled={proBusy}
+            className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-3.5 rounded-xl transition text-sm disabled:opacity-50"
           >
-            Get Pro Insights — {PRO_PRICE_INR} <span className="line-through opacity-60 font-medium">{PRO_PRICE_STRIKE_INR}</span>
+            {proBusy ? 'Opening payment...' : (<>
+              Get Pro Insights — {PRO_PRICE_INR} <span className="line-through opacity-60 font-medium">{PRO_PRICE_STRIKE_INR}</span>
+            </>)}
           </button>
+          {proError && <p className="text-red-400 text-[11px] mt-2" role="alert">{proError}</p>}
           <p className="text-[10px] text-gray-500 mt-1.5">Launch offer · Prioritized roadmap + repository deep dive, unlocked in your dashboard</p>
         </div>
 
-        <button onClick={onClose} className="mt-5 text-xs text-gray-400 hover:text-gray-300 transition">
-          Continue to Dashboard
-        </button>
+        {continueHref && (
+          <a href={continueHref} className="mt-5 inline-block text-xs text-gray-400 hover:text-gray-300 transition">
+            Continue to Dashboard
+          </a>
+        )}
       </div>
     </div>
   );

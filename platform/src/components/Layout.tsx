@@ -8,7 +8,7 @@ const NAV_LINKS = [
   { href: '/leaderboard', label: 'Leaderboard' },
   { href: '/readme-generator', label: 'README' },
   { href: '/github-profile-score', label: 'Score' },
-  { href: '/dashboard?user=Shashwat1319', label: 'Pro' },
+  { href: '/dashboard?pro=1', label: 'Pro' },
 ];
 
 const HOME_EXTRA = [
