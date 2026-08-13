@@ -40,6 +40,15 @@ function badgeSVG(label: string, score: number, color: string, style: string) {
 </svg>`;
 }
 
+function cacheHeaders(res: NextApiResponse, isPro: boolean) {
+  res.setHeader('Vary', 'Cookie');
+  if (isPro) {
+    res.setHeader('Cache-Control', 'private, max-age=60');
+  } else {
+    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate');
+  }
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -53,9 +62,10 @@ export default async function handler(
   const isProRequest = requestedStyle === 'gold' || requestedStyle === 'dark';
   const cookies = req.headers.cookie || '';
   const hasPro = cookies.split('; ').some(c => c.startsWith('autodev_pro=1'));
-  const badgeStyle = ['classic', 'gold', 'dark'].includes(requestedStyle) && (!isProRequest || hasPro) ? requestedStyle : 'classic';
+  const isProServed = isProRequest && hasPro;
+  const badgeStyle = ['classic', 'gold', 'dark'].includes(requestedStyle) && (isProServed || !isProRequest) ? requestedStyle : 'classic';
   const validated = validateUsername(username);
-  if (!validated) return res.status(200).setHeader('Content-Type', 'image/svg+xml').setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate').send(badgeSVG('Invalid User', 0, '#f44336', badgeStyle));
+  if (!validated) return res.status(200).setHeader('Content-Type', 'image/svg+xml').send(badgeSVG('Invalid User', 0, '#f44336', badgeStyle));
 
   try {
     const analysis = await analyzeProfile(validated);
@@ -66,9 +76,13 @@ export default async function handler(
     const color = getScoreHex(analysis.overallScore);
     const label = `AutoDev ${getScoreLabel(analysis.overallScore)}`;
 
-    res.status(200).setHeader('Content-Type', 'image/svg+xml').setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate').send(badgeSVG(label, analysis.overallScore, color, badgeStyle));
+    res.status(200).setHeader('Content-Type', 'image/svg+xml');
+    cacheHeaders(res, isProRequest);
+    res.send(badgeSVG(label, analysis.overallScore, color, badgeStyle));
   } catch (err) {
     Sentry.captureException(err);
-    res.status(200).setHeader('Content-Type', 'image/svg+xml').setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate').send(badgeSVG('Error', 0, '#f44336', badgeStyle));
+    res.status(200).setHeader('Content-Type', 'image/svg+xml');
+    cacheHeaders(res, isProRequest);
+    res.send(badgeSVG('Error', 0, '#f44336', badgeStyle));
   }
 }
