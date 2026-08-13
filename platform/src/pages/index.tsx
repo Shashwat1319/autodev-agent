@@ -187,8 +187,11 @@ export default function Home() {
           <p className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-3 sm:mb-4 animate-fade-in text-balance">
             Find yours in 10 seconds — no prompts, no chat with Claude. A free scored profile, badge, and recruiter-ready README.
           </p>
-          <p className="text-xs sm:text-sm text-cyan-400/70 max-w-xl mx-auto mb-8 sm:mb-10 animate-fade-in">
+          <p className="text-xs sm:text-sm text-cyan-400/70 max-w-xl mx-auto mb-2 sm:mb-3 animate-fade-in">
             10 seconds vs. a 30-minute AI chat. Type a username → get your score → put it on your README.
+          </p>
+          <p className="text-xs sm:text-sm text-gray-500 max-w-xl mx-auto mb-8 sm:mb-10 animate-fade-in">
+            See how the score works <Link href="/github-profile-score" className="text-cyan-400 hover:underline">here</Link> — what matters, what doesn&apos;t, and how to raise yours.
           </p>
 
           {/* CTA Buttons */}
