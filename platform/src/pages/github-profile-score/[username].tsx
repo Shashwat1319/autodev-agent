@@ -76,7 +76,7 @@ export default function ProfileScorePage({ username, data }: { username: string;
                   '@type': 'ProfilePage',
                   mainEntity: {
                     '@type': 'Person',
-                    name: data?.bio || username,
+                    name: data && data.bio !== 'No bio' ? data.bio : username,
                     url: `https://github.com/${username}`,
                     image: data?.avatar,
                   },
@@ -130,7 +130,7 @@ export default function ProfileScorePage({ username, data }: { username: string;
                         <span className="gradient-text">{data.overallScore}/100</span>
                       </h1>
                       <p className="text-gray-400 text-sm mt-1">
-                        {data.bio} {data.location ? `· ${data.location}` : ''}
+                        {data.bio !== 'No bio' ? data.bio : ''} {data.location ? `· ${data.location}` : ''}
                       </p>
                       <div className="flex flex-wrap gap-2 mt-3">
                         <Link
