@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { track } from '@vercel/analytics';
 import { BASE_URL } from '../lib/config';
 import { isValidUsernameFormat, USERNAME_FORMAT_ERROR } from '../lib/username';
+import { copyText } from '../lib/clipboard';
 import Layout from '../components/Layout';
 
 const STYLES = [
@@ -28,16 +29,24 @@ export default function ReadmeGenerator() {
     const u = Array.isArray(raw) ? raw[0] : raw;
     if (u && u !== username) {
       setUsername(u);
+      if (loading) return;
+      const cacheKey = `${u.trim().toLowerCase()}:${style}`;
+      if (cached[cacheKey]) {
+        setReadme(cached[cacheKey]);
+        return;
+      }
       generatePreview(style, u);
     }
   }, [router.query.username]);
 
   const generatePreview = async (s?: string, overrideUser?: string) => {
+    if (loading) return;
     const targetUser = (overrideUser || username).trim();
     if (!targetUser) { setError('Please enter a GitHub username'); return; }
     if (!isValidUsernameFormat(targetUser)) { setError(USERNAME_FORMAT_ERROR); return; }
     const activeStyle = s || style;
-    if (cached[activeStyle]) { setReadme(cached[activeStyle]); if (s) setStyle(s); return; }
+    const cacheKey = `${targetUser.toLowerCase()}:${activeStyle}`;
+    if (cached[cacheKey]) { setReadme(cached[cacheKey]); if (s) setStyle(s); return; }
     if (s) setStyle(s);
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -55,12 +64,14 @@ export default function ReadmeGenerator() {
       }
       const data = await res.json();
       setReadme(data.readme);
-      setCached(prev => ({ ...prev, [activeStyle]: data.readme }));
+      setCached(prev => ({ ...prev, [cacheKey]: data.readme }));
       track('readme_generated', { username: targetUser, style: activeStyle });
     } catch (err: any) {
       if (err.name !== 'AbortError') setError(err.message);
     }
-    setLoading(false);
+    if (abortRef.current === controller) {
+      setLoading(false);
+    }
   };
 
   const downloadReadme = async () => {
@@ -91,7 +102,7 @@ export default function ReadmeGenerator() {
 
   const copyReadme = () => {
     if (!readme) return;
-    navigator.clipboard.writeText(readme).catch(() => {});
+    copyText(readme);
     setCopied(true);
     track('readme_copied', { username: username.trim(), style });
     setTimeout(() => setCopied(false), 2000);

@@ -5,10 +5,14 @@ import Link from 'next/link';
 import { track } from '@vercel/analytics';
 import { getLangColor, getScoreLabel } from '../lib/format';
 import { BASE_URL } from '../lib/config';
-import { isProUnlocked, unlockPro, markProAttempt, isProAttempt, clearProAttempt, PRO_PRICE_INR, PRO_PRICE_STRIKE_INR } from '../lib/pro';
+import { isProUnlocked, unlockPro, PRO_PRICE_INR, PRO_PRICE_STRIKE_INR } from '../lib/pro';
 import { isValidUsernameFormat, USERNAME_FORMAT_ERROR } from '../lib/username';
+import { copyText } from '../lib/clipboard';
 import Layout from '../components/Layout';
 import ShareModal from '../components/ShareModal';
+import ProLocked from '../components/pro-locked';
+import RecheckBanner from '../components/recheck-banner';
+import { setLastCheck } from '../lib/retention';
 
 const BADGE_STYLES = [
   { id: 'classic', label: 'Classic', pro: false },
@@ -32,6 +36,7 @@ export default function Dashboard() {
   const [badgeStyle, setBadgeStyle] = useState('classic');
   const [proEmail, setProEmail] = useState('');
   const [verifyingPro, setVerifyingPro] = useState(false);
+  const [proBadgeSrc, setProBadgeSrc] = useState('');
   const abortRef = useRef<AbortController | null>(null);
   useEffect(() => {
     if (profile && !showShareModal) {
@@ -39,9 +44,10 @@ export default function Dashboard() {
       try { autoopened = !!localStorage.getItem('autodev_share_autoopened'); } catch {}
       if (!autoopened) {
         const timer = setTimeout(() => {
+          if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
           try { localStorage.setItem('autodev_share_autoopened', '1'); } catch {}
           setShowShareModal(true);
-        }, 2500);
+        }, 5000);
         return () => clearTimeout(timer);
       }
     }
@@ -66,6 +72,7 @@ export default function Dashboard() {
     setLoading(true);
     setError('');
     setUsername(target);
+    setProfile(null);
     setLoadingStep('Fetching profile...');
     try {
       const res = await fetch(`/api/analyze?username=${encodeURIComponent(target)}`, { signal: controller.signal });
@@ -77,12 +84,15 @@ export default function Dashboard() {
       }
       const data = await res.json();
       setProfile(data);
+      setLastCheck();
       track('profile_analyzed', { username: target, score: data.overallScore ?? null });
     } catch (err: any) {
-      if (err.name !== 'AbortError') setError(err.message);
+      if (err.name !== 'AbortError') { setError(err.message); setProfile(null); }
     }
-    setLoading(false);
-    setLoadingStep('');
+    if (abortRef.current === controller) {
+      setLoading(false);
+      setLoadingStep('');
+    }
   };
 
   useEffect(() => {
@@ -122,9 +132,6 @@ export default function Dashboard() {
           .then((d: any) => finish(d?.paid === true, 'Payment not completed \u2014 Pro stays locked. If you paid, reply to your receipt email for help.'))
           .catch(() => finish(false, 'Couldn\u2019t verify your payment \u2014 try again in a minute.'))
           .finally(() => setVerifyingPro(false));
-      } else if (isProAttempt()) {
-        clearProAttempt();
-        finish(true);
       } else {
         finish(false, 'Payment not detected \u2014 Pro stays locked. If you paid, reply to your email receipt for help.');
       }
@@ -132,6 +139,16 @@ export default function Dashboard() {
       setProUnlocked(true);
     }
   }, [router.query]);
+
+  useEffect(() => {
+    if (!proUnlocked || !profile?.username || badgeStyle === 'classic') { setProBadgeSrc(''); return; }
+    let cancelled = false;
+    fetch(`/api/pro/badge-url?username=${encodeURIComponent(profile.username)}&style=${badgeStyle}`)
+      .then(r => r.json())
+      .then((d: any) => { if (!cancelled && d?.url) setProBadgeSrc(d.url); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [proUnlocked, badgeStyle, profile?.username]);
 
   const openPro = async () => {
     track('pro_cta_clicked', { username: profile?.username });
@@ -147,7 +164,7 @@ export default function Dashboard() {
       let data: any = null;
       try { data = await res.json(); } catch {}
       if (data?.url) {
-        markProAttempt(profile?.username || '');
+        try { if (proEmail) localStorage.setItem('autodev_pro_email', proEmail); } catch {}
         window.location.href = data.url;
         return;
       }
@@ -276,6 +293,7 @@ export default function Dashboard() {
             </div>
           </div>
           )}
+          <RecheckBanner username={profile.username} onRecheck={() => fetchProfile(profile.username)} />
           {/* Profile Header */}
           <div className="glass rounded-2xl p-8 glow">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
@@ -331,22 +349,22 @@ export default function Dashboard() {
                 <p className="text-xs text-gray-500">Show off your score — add this to your GitHub README</p>
               </div>
               <img
-                src={`/api/badge?username=${profile.username}&style=${badgeStyle}`}
-                alt={`AutoDev Score badge for ${profile.username}`}
-                width={178}
+                src={proBadgeSrc || `/api/badge?username=${profile.username}&style=${badgeStyle}`}
+                alt="AutoDev score badge preview"
+                width={220}
                 height={20}
-                className="h-5 flex-shrink-0"
+                className="h-5"
                 loading="lazy"
               />
             </div>
             <div className="mt-4 flex gap-2">
               <div className="flex-1 glass rounded-lg px-4 py-2.5 text-xs text-gray-400 font-mono truncate select-all">
-                {`[![AutoDev Score](${BASE_URL}/api/badge?username=${profile.username}&style=${badgeStyle})](${BASE_URL}/dashboard?user=${profile.username})`}
+                {`[![AutoDev Score](${BASE_URL}${proBadgeSrc || `/api/badge?username=${profile.username}&style=${badgeStyle}`})](${BASE_URL}/dashboard?user=${profile.username})`}
               </div>
               <button
                 onClick={() => {
-                  const text = `[![AutoDev Score](${BASE_URL}/api/badge?username=${profile.username}&style=${badgeStyle})](${BASE_URL}/dashboard?user=${profile.username})`;
-                  navigator.clipboard.writeText(text).catch(() => {});
+                  const text = `[![AutoDev Score](${BASE_URL}${proBadgeSrc || `/api/badge?username=${profile.username}&style=${badgeStyle}`})](${BASE_URL}/dashboard?user=${profile.username})`;
+                  copyText(text);
                   setBadgeCopied(true);
                   track('badge_copied', { username: profile.username, style: badgeStyle });
                   setTimeout(() => setBadgeCopied(false), 2000);
@@ -401,7 +419,7 @@ export default function Dashboard() {
               <button
                 onClick={() => {
                   const msg = `My AutoDev score is ${profile.overallScore}/100! Check your GitHub profile here: ${BASE_URL}/dashboard?user=${profile.username}`;
-                  navigator.clipboard.writeText(msg).catch(() => {});
+                  copyText(msg);
                   setLinkCopied(true);
                   track('share_copied', { username: profile.username });
                   setTimeout(() => setLinkCopied(false), 3000);
@@ -530,49 +548,14 @@ export default function Dashboard() {
           {/* Pro Insights */}
           <div id="pro-insights" className="glass rounded-2xl p-8 relative overflow-hidden scroll-mt-28">
             {!proUnlocked ? (
-              <div className="relative">
-                {verifyingPro && (
-                  <p className="text-xs text-amber-400 mb-4 animate-pulse" role="status">Verifying your payment…</p>
-                )}
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-lg flex-shrink-0">🔒</div>
-                  <div>
-                    <h2 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Pro Insights</h2>
-                    <p className="text-xs text-gray-500">Level up your GitHub profile — right here</p>
-                  </div>
-                </div>
-                <div className="grid md:grid-cols-3 gap-3 mb-6">
-                  {[
-                    ['🎯', 'Prioritized Roadmap', 'Every recommendation ranked by impact, estimated score gain, and effort'],
-                    ['🧠', 'Repo Deep Dive', 'Strengths & weaknesses of each of your top repositories'],
-                    ['📈', 'Score Breakdown', 'Consistency, volume, and language analysis in one view'],
-                  ].map(([icon, title, desc]) => (
-                    <div key={title} className="glass rounded-xl p-4">
-                      <div className="text-lg mb-1.5">{icon}</div>
-                      <div className="text-sm text-white font-medium mb-0.5">{title}</div>
-                      <div className="text-[10px] text-gray-500">{desc}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="text-center max-w-sm mx-auto">
-                  <input
-                    type="email"
-                    placeholder="Email for receipt (optional)"
-                    aria-label="Email for receipt"
-                    value={proEmail}
-                    onChange={e => setProEmail(e.target.value)}
-                    className="w-full glass rounded-xl px-4 py-3 text-sm text-white outline-none mb-3 placeholder:text-gray-500"
-                  />
-                  <button
-                    id="pro-pay-btn"
-                    onClick={openPro}
-                    className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold px-8 py-3.5 rounded-xl transition text-sm"
-                  >
-                    Unlock Pro Insights — {PRO_PRICE_INR} <span className="line-through opacity-60 font-medium">{PRO_PRICE_STRIKE_INR}</span>
-                  </button>
-                  <p className="text-[10px] text-gray-500 mt-3">Launch offer · Pay once · Lifetime access · No subscription · Razorpay</p>
-                </div>
-              </div>
+              <ProLocked
+                username={profile?.username || username}
+                items={improvementItems.slice(3)}
+                proEmail={proEmail}
+                setProEmail={setProEmail}
+                onUnlock={openPro}
+                verifyingPro={verifyingPro}
+              />
             ) : (
               <div className="relative space-y-6">
                 <div className="flex items-center gap-3">

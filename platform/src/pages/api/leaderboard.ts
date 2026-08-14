@@ -24,7 +24,7 @@ export default async function handler(
     const extra = q.split(',').map((u: string) => u.trim()).filter(Boolean).slice(0, 10);
     extra.forEach((u) => {
       const name = validateUsername(u);
-      if (name && !usernames.includes(name)) usernames.push(name);
+      if (name && !usernames.some(existing => existing.toLowerCase() === name.toLowerCase())) usernames.push(name);
     });
   }
 

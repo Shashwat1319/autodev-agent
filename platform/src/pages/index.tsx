@@ -34,6 +34,7 @@ const stats = [
 
 import { BASE_URL } from '../lib/config';
 import { isValidUsernameFormat, USERNAME_FORMAT_ERROR } from '../lib/username';
+import { copyText } from '../lib/clipboard';
 
 export default function Home() {
   const [username, setUsername] = useState('');
@@ -60,15 +61,17 @@ export default function Home() {
       try { autoOpened = !!localStorage.getItem('autodev_share_autoopened'); } catch {}
       if (!autoOpened) {
         shareTimer = setTimeout(() => {
+          if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
           try { localStorage.setItem('autodev_share_autoopened', '1'); } catch {}
           setShowShareModal(true);
-        }, 2500);
+        }, 5000);
       }
       return () => { if (shareTimer) clearTimeout(shareTimer); clearTimeout(scrollTimer); };
     }
   }, [result]);
 
   const analyzeProfile = async () => {
+    if (analyzing) return;
     const u = usernameRef.current.trim();
     if (!u) { setError('Please enter a GitHub username'); return; }
     if (!isValidUsernameFormat(u)) { setError(USERNAME_FORMAT_ERROR); return; }
@@ -335,7 +338,7 @@ export default function Home() {
                   <button
                     onClick={() => {
                       const text = `[![AutoDev Score](${BASE_URL}/api/badge?username=${result.username})](${BASE_URL}/dashboard?user=${result.username})`;
-                      navigator.clipboard.writeText(text).catch(() => {});
+                      copyText(text);
                       setHomeBadgeCopied(true);
                       track('badge_copied', { username: result.username, source: 'home-result' });
                       setTimeout(() => setHomeBadgeCopied(false), 2000);
@@ -393,7 +396,7 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 glass rounded-xl px-4 sm:px-6 py-3">
               <code className="text-cyan-400 text-sm font-mono">$ npx autodev-agent</code>
               <button
-                onClick={() => { navigator.clipboard.writeText('npx autodev-agent').catch(() => {}); setNpxCopied(true); track('npx_copied'); setTimeout(() => setNpxCopied(false), 2000); }}
+                onClick={() => { copyText('npx autodev-agent'); setNpxCopied(true); track('npx_copied'); setTimeout(() => setNpxCopied(false), 2000); }}
                 className="text-gray-500 hover:text-white transition text-xs min-w-[36px] text-left"
               >
                 {npxCopied ? 'Copied!' : 'Copy'}

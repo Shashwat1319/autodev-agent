@@ -1,5 +1,6 @@
 import { BASE_URL } from '../lib/config';
-import { PRO_PRICE_INR, PRO_PRICE_STRIKE_INR, markProAttempt } from '../lib/pro';
+import { PRO_PRICE_INR, PRO_PRICE_STRIKE_INR } from '../lib/pro';
+import { copyText } from '../lib/clipboard';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 export default function ShareModal({ profile, onClose, continueHref }: { profile: any; onClose: () => void; continueHref?: string }) {
@@ -40,7 +41,7 @@ export default function ShareModal({ profile, onClose, continueHref }: { profile
     window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(`My AutoDev score is ${profile.overallScore}/100! Check yours →`)}&url=${encodeURIComponent(`${BASE_URL}/dashboard?user=${profile.username}`)}`, '_blank', 'noopener');
   };
   const copyBadge = () => {
-    navigator.clipboard.writeText(`[![AutoDev Score](${BASE_URL}/api/badge?username=${profile.username})](${BASE_URL}/dashboard?user=${profile.username})`).catch(() => {});
+    copyText(`[![AutoDev Score](${BASE_URL}/api/badge?username=${profile.username})](${BASE_URL}/dashboard?user=${profile.username})`);
     setBadgeCopied(true);
     setTimeout(() => setBadgeCopied(false), 2000);
   };
@@ -56,7 +57,6 @@ export default function ShareModal({ profile, onClose, continueHref }: { profile
       let data: any = null;
       try { data = await res.json(); } catch {}
       if (data?.url) {
-        markProAttempt(profile.username);
         window.location.href = data.url;
         return;
       }

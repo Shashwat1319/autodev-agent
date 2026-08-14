@@ -1,12 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function PHBanner() {
-  const [dismissed, setDismissed] = useState(() => {
-    if (typeof document === 'undefined') return false;
-    try { return localStorage.getItem('autodev_ph_banner_dismissed') === '1'; } catch { return false; }
-  });
+  const [mounted, setMounted] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
-  if (dismissed) return null;
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('autodev_ph_banner_dismissed') === '1') setDismissed(true);
+    } catch {}
+    setMounted(true);
+  }, []);
+
+  if (!mounted || dismissed) return null;
 
   const dismiss = () => {
     try { localStorage.setItem('autodev_ph_banner_dismissed', '1'); } catch {}

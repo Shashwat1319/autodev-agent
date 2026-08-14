@@ -1,8 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import * as Sentry from '@sentry/nextjs';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { rateLimit, validateUsername } from '../../lib/api-utils';
 import { analyzeProfile } from '../../lib/analyze-profile';
 import { getScoreHex, getScoreLabel } from '../../lib/format';
+
+const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
 
 const LABEL_COLORS: Record<string, string> = {
   classic: '#555',
@@ -57,14 +60,25 @@ export default async function handler(
   const rl = rateLimit({ key: `badge:${ip}`, maxRequests: 60, windowMs: 60000 });
   if (!rl.allowed) return res.status(200).setHeader('Content-Type', 'image/svg+xml').send(badgeSVG('Rate Limited', 0, '#f44336', 'classic'));
 
-  const { username, style = 'classic' } = req.query;
+  const { username, style = 'classic', exp, sig } = req.query;
   const requestedStyle = String(style);
   const isProRequest = requestedStyle === 'gold' || requestedStyle === 'dark';
   const cookies = req.headers.cookie || '';
   const hasPro = cookies.split('; ').some(c => c.startsWith('autodev_pro=1'));
-  const isProServed = isProRequest && hasPro;
-  const badgeStyle = ['classic', 'gold', 'dark'].includes(requestedStyle) && (isProServed || !isProRequest) ? requestedStyle : 'classic';
   const validated = validateUsername(username);
+  const isSignedPro = isProRequest && validated ? (() => {
+    const expiry = Number(exp);
+    const signature = String(sig || '');
+    const now = Date.now() / 1000;
+    if (!KEY_SECRET || !expiry || !signature || expiry < now || expiry - now > 90 * 86400) return false;
+    const msg = `${validated}:${requestedStyle}:${expiry}`;
+    const expected = createHmac('sha256', KEY_SECRET).update(msg).digest('hex');
+    const a = Buffer.from(expected);
+    const b = Buffer.from(signature);
+    return a.length === b.length && timingSafeEqual(a, b);
+  })() : false;
+  const isProServed = isProRequest && (hasPro || isSignedPro);
+  const badgeStyle = ['classic', 'gold', 'dark'].includes(requestedStyle) && (isProServed || !isProRequest) ? requestedStyle : 'classic';
   if (!validated) return res.status(200).setHeader('Content-Type', 'image/svg+xml').send(badgeSVG('Invalid User', 0, '#f44336', badgeStyle));
 
   try {

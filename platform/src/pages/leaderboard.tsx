@@ -14,6 +14,7 @@ export default function Leaderboard() {
   const [adding, setAdding] = useState(false);
   const [addedMsg, setAddedMsg] = useState('');
   const [highlightUser, setHighlightUser] = useState('');
+  const [ownEntry, setOwnEntry] = useState<any>(null);
   const fetchIdRef = useRef(0);
 
   const getStoredAdded = (): string[] => {
@@ -54,29 +55,39 @@ export default function Leaderboard() {
 
   useEffect(() => {
     const stored = getStoredAdded();
+    if (!stored.length) { setOwnEntry(null); return; }
+    const match = entries.find((e: any) => stored.some(s => s.toLowerCase() === e.username.toLowerCase()));
+    setOwnEntry(match || null);
+  }, [entries]);
+
+  useEffect(() => {
+    const stored = getStoredAdded();
     if (stored.length > 0) fetchLeaderboard(stored.join(','));
     else fetchLeaderboard();
   }, []);
 
   const addProfile = async () => {
+    if (adding) return;
     const u = inputValue.trim();
     if (!u) { setFetchError('Please enter a GitHub username'); return; }
     if (!isValidUsernameFormat(u)) { setFetchError(USERNAME_FORMAT_ERROR); return; }
     setAdding(true);
     const stored = getStoredAdded();
-    if (!stored.includes(u)) {
+    if (!stored.some(x => x.toLowerCase() === u.toLowerCase())) {
       stored.push(u);
       try { localStorage.setItem('autodev_lb_added', JSON.stringify(stored.slice(-10))); } catch {}
     }
-    const added = await fetchLeaderboard(stored.join(','));
+    const list = stored.slice(-10);
+    const added = await fetchLeaderboard(list.join(','));
     setInputValue('');
     setAdding(false);
-    if (added.includes(u)) {
+    const matched = added.find(x => x.toLowerCase() === u.toLowerCase());
+    if (matched) {
       setFetchError('');
-      setHighlightUser(u);
+      setHighlightUser(matched);
       setAddedMsg('Added! Your profile is on the board below.');
       setTimeout(() => {
-        document.getElementById(`lb-${u}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById(`lb-${matched}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 400);
     } else {
       setHighlightUser('');
@@ -166,6 +177,28 @@ export default function Leaderboard() {
       {/* Table */}
       <section className="pb-20">
         <div className="max-w-4xl mx-auto px-6">
+          {!loading && ownEntry && (
+            <div className="glass rounded-2xl p-5 mb-6 border border-cyan-400/20 flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-lg font-bold text-black flex-shrink-0">#{ownEntry.rank}</div>
+                <div>
+                  <p className="text-sm font-medium text-white">You&apos;re ranked {ownEntry.rank} of {entries.length} on this board</p>
+                  <p className="text-xs text-gray-400">
+                    Score {ownEntry.score}/100 ·{' '}
+                    {entries[0] && ownEntry.username.toLowerCase() !== entries[0].username.toLowerCase()
+                      ? `${entries[0].score - ownEntry.score} points behind #1 (${entries[0].username})`
+                      : 'You&apos;re leading the board! 🏆'}
+                  </p>
+                </div>
+              </div>
+              <a
+                href={`/dashboard?user=${ownEntry.username}`}
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold px-5 py-2.5 rounded-xl transition text-sm flex-shrink-0"
+              >
+                See how to improve
+              </a>
+            </div>
+          )}
           {loading ? (
             <div className="text-center py-16" role="status" aria-live="polite">
               <svg className="animate-spin w-8 h-8 text-cyan-400 mx-auto" viewBox="0 0 24 24" aria-hidden="true"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>

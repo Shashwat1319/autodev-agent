@@ -1,11 +1,20 @@
 import Head from 'next/head';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { BASE_URL } from '../lib/config';
+import { copyText } from '../lib/clipboard';
 import Layout from '../components/Layout';
 
 export default function BadgePage() {
+  const router = useRouter();
   const [username, setUsername] = useState('Shashwat1319');
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const raw = router.query.username;
+    const u = Array.isArray(raw) ? raw[0] : raw;
+    if (typeof u === 'string' && u.trim()) setUsername(u.trim());
+  }, [router.query.username]);
 
   return (
     <>
@@ -79,7 +88,7 @@ export default function BadgePage() {
               </div>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(`[![AutoDev Score](${BASE_URL}/api/badge?username=YOUR_USERNAME)](${BASE_URL}/dashboard?user=YOUR_USERNAME)`).catch(() => {});
+                  copyText(`[![AutoDev Score](${BASE_URL}/api/badge?username=YOUR_USERNAME)](${BASE_URL}/dashboard?user=YOUR_USERNAME)`);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }}

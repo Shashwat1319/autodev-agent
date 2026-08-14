@@ -12,10 +12,12 @@ export default async function handler(
   if (!rl.allowed) return res.status(429).json({ error: `Too many requests. Try again in ${Math.ceil(rl.resetIn / 1000)}s.` });
 
   const { username } = req.query;
-  if (typeof username !== 'string' || username.trim() === '') {
+  const bodyUsername = typeof req.body?.username === 'string' ? req.body.username : '';
+  const raw = (typeof username === 'string' && username.trim() !== '' ? username : bodyUsername).trim();
+  if (!raw) {
     return res.status(400).json({ error: 'Please enter a GitHub username' });
   }
-  const validated = validateUsername(username);
+  const validated = validateUsername(raw);
   if (!validated) {
     return res.status(400).json({ error: 'That doesn\u2019t look like a GitHub username \u2014 letters, numbers, dashes and underscores only, no spaces.' });
   }
