@@ -5,7 +5,7 @@ import { BASE_URL } from '../../../lib/config';
 
 const KEY_ID = process.env.RAZORPAY_KEY_ID || '';
 const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
-const AMOUNT = Number(process.env.PRO_PRICE_PAISE) || 29900;
+const AMOUNT = Number(process.env.PRO_PRICE_PAISE) || 49900;
 
 export default async function handler(
   req: NextApiRequest,
@@ -28,12 +28,12 @@ export default async function handler(
   const payload: Record<string, unknown> = {
     amount: AMOUNT,
     currency: 'INR',
-    description: 'AutoDev Pro Insights — lifetime access',
+    description: 'AutoDev GitHub Profile Makeover — README + roadmap + badge',
     reference_id: `ad-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
     callback_url: `${BASE_URL}/dashboard?user=${encodeURIComponent(username)}&pro_unlocked=1`,
     callback_method: 'get',
     notify: { email: true },
-    notes: { source: 'autodev-dashboard', username },
+    notes: { source: 'autodev-dashboard', product: 'makeover', username },
   };
   if (email) payload.customer = { email };
 

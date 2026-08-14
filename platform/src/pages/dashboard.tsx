@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { track } from '@vercel/analytics';
 import { getLangColor, getScoreLabel } from '../lib/format';
 import { BASE_URL } from '../lib/config';
-import { isProUnlocked, unlockPro, PRO_PRICE_INR, PRO_PRICE_STRIKE_INR } from '../lib/pro';
+import { isProUnlocked, unlockPro, MAKEOVER_PRICE_INR } from '../lib/pro';
 import { isValidUsernameFormat, USERNAME_FORMAT_ERROR } from '../lib/username';
 import { copyText } from '../lib/clipboard';
 import Layout from '../components/Layout';
@@ -19,6 +19,64 @@ const BADGE_STYLES = [
   { id: 'gold', label: 'Gold', pro: true },
   { id: 'dark', label: 'Dark', pro: true },
 ];
+
+function MakeoverKit({ username }: { username: string }) {
+  const [readme, setReadme] = useState('');
+  const [loadingReadme, setLoadingReadme] = useState(false);
+  const [readmeError, setReadmeError] = useState('');
+  const [readmeCopied, setReadmeCopied] = useState(false);
+  const genReadme = async () => {
+    if (loadingReadme) return;
+    setLoadingReadme(true);
+    setReadmeError('');
+    try {
+      const res = await fetch(`/api/generate-readme?username=${encodeURIComponent(username)}&style=recruiter`);
+      if (!res.ok) {
+        let msg = 'Failed to generate README';
+        try { const e = await res.json(); msg = e.error || msg; } catch {}
+        throw new Error(msg);
+      }
+      const data = await res.json();
+      setReadme(data.readme);
+    } catch (err: any) {
+      setReadmeError(err.message || 'Failed to generate README');
+    }
+    setLoadingReadme(false);
+  };
+  return (
+    <div className="glass rounded-xl p-4">
+      <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+        <div>
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">📝 Recruiter-Ready README</h3>
+          <p className="text-[10px] text-gray-500">Generated from your live profile — paste into your profile README</p>
+        </div>
+        <div className="flex gap-2">
+          {readme && (
+            <button
+              onClick={() => { copyText(readme); setReadmeCopied(true); setTimeout(() => setReadmeCopied(false), 2000); }}
+              className="glass rounded-lg px-3 py-1.5 text-[10px] text-cyan-400 hover:bg-white/[0.08] transition font-medium"
+            >
+              {readmeCopied ? 'Copied!' : 'Copy Full README'}
+            </button>
+          )}
+          <button
+            onClick={genReadme}
+            disabled={loadingReadme}
+            className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-semibold px-3 py-1.5 rounded-lg transition text-[10px] disabled:opacity-50"
+          >
+            {loadingReadme ? 'Generating...' : readme ? 'Regenerate' : 'Generate README'}
+          </button>
+        </div>
+      </div>
+      {readmeError && <p className="text-red-400 text-[11px] mb-2" role="alert">{readmeError}</p>}
+      {readme ? (
+        <pre className="glass rounded-lg p-3 text-[10px] text-gray-400 max-h-64 overflow-auto select-all whitespace-pre-wrap">{readme}</pre>
+      ) : (
+        <p className="text-[10px] text-gray-500">README ready when you are — hit Generate to build your recruiter-ready profile file.</p>
+      )}
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const router = useRouter();
@@ -172,7 +230,7 @@ export default function Dashboard() {
     } catch (err: any) {
       setError(err.message || 'Payment setup failed. Please try again in a minute.');
     }
-    if (btn) { btn.disabled = false; btn.textContent = `Unlock Pro Insights — ${PRO_PRICE_INR}`; }
+    if (btn) { btn.disabled = false; btn.textContent = `Get My Makeover — ${MAKEOVER_PRICE_INR}`; }
   };
 
   const improvementItems = useMemo(() => (profile?.recommendations || []).map((r: string) => {
@@ -294,6 +352,28 @@ export default function Dashboard() {
           </div>
           )}
           <RecheckBanner username={profile.username} onRecheck={() => fetchProfile(profile.username)} />
+          {/* Makeover CTA Banner */}
+          {!proUnlocked && profile.overallScore < 75 && (
+          <div className="glass rounded-2xl p-5 border border-amber-400/20 flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-lg font-bold text-black flex-shrink-0">🎯</div>
+              <div>
+                <p className="text-sm font-medium text-white">Your score: {profile.overallScore}/100 — room to grow</p>
+                <p className="text-xs text-gray-400">The Makeover fixes README, repos, and score. Delivered in 48 hours.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                track('makeover_cta_clicked', { username: profile.username, score: profile.overallScore });
+                const el = document.getElementById('pro-insights');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-semibold px-5 py-2.5 rounded-xl transition text-sm flex-shrink-0"
+            >
+              See My Fix Plan
+            </button>
+          </div>
+          )}
           {/* Profile Header */}
           <div className="glass rounded-2xl p-8 glow">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
@@ -501,7 +581,7 @@ export default function Dashboard() {
                       onClick={openPro}
                       className="mt-4 w-full glass rounded-xl px-4 py-3 text-xs text-amber-400 hover:bg-white/[0.08] transition font-medium"
                     >
-                      🔒 +{profile.recommendations.length - 3} more recommendations with Pro
+                      🎯 +{profile.recommendations.length - 3} more fixes in your Makeover
                     </button>
                   )}
                 </>
@@ -559,12 +639,14 @@ export default function Dashboard() {
             ) : (
               <div className="relative space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-lg flex-shrink-0">★</div>
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-lg flex-shrink-0">🎯</div>
                   <div>
-                    <h2 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Pro Insights</h2>
-                    <p className="text-xs text-gray-500">Your improvement roadmap + repository deep dive</p>
+                    <h2 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Makeover Delivered</h2>
+                    <p className="text-xs text-gray-500">Your fix plan + recruiter-ready README + score badge</p>
                   </div>
                 </div>
+
+                <MakeoverKit username={profile.username} />
 
                 <div>
                   <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Improvement Roadmap</h3>

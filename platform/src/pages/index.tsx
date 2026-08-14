@@ -475,6 +475,57 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Makeover */}
+      <section id="makeover" className="section-padding border-t border-white/5 relative">
+        <div className="absolute inset-0 bg-gradient-to-t from-amber-500/[0.04] to-transparent" />
+        <div className="relative max-w-5xl mx-auto container-padding">
+          <div className="text-center mb-8 sm:mb-12">
+            <span className="text-xs font-semibold text-amber-400 uppercase tracking-[0.2em]">The Makeover</span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-3 mb-4">Score Below 80? Fix It — ₹499</h2>
+            <p className="text-gray-400 max-w-xl mx-auto">
+              Recruiters check GitHub before they call you. Don&apos;t lose interviews over an empty profile.
+              Get a recruiter-ready profile in 48 hours.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4 sm:gap-5 mb-8 sm:mb-10">
+            {[
+              ['📝', 'Recruiter-Ready README', 'Auto-generated from your live profile — copy, paste, done'],
+              ['🎯', 'Prioritized Fix Plan', 'Every step ranked by impact, score gain, and effort'],
+              ['🏆', 'Score Badge + Gold/Dark Styles', 'Show your score on GitHub — proof, not promises'],
+            ].map(([icon, title, desc]) => (
+              <div key={title} className="glass rounded-xl p-4 sm:p-6 glass-hover text-center">
+                <div className="text-xl sm:text-2xl mb-3">{icon}</div>
+                <h3 className="text-white font-semibold mb-1.5">{title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="glass rounded-2xl p-6 sm:p-8 max-w-lg mx-auto text-center relative overflow-hidden glow">
+            <div className="text-xs text-gray-500 mb-2 uppercase tracking-wider">One-time · No subscription</div>
+            <div className="text-4xl sm:text-5xl font-bold mb-3">
+              <span className="line-through opacity-40 text-xl align-top mr-2">₹999</span>₹499
+            </div>
+            <p className="text-xs text-gray-400 mb-4">Included: full fix plan + recruiter README + badge styles + recheck reminders. Money-back guarantee.</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-semibold px-6 sm:px-8 py-3 rounded-xl transition glow-hover text-sm">
+                Check My Score — Then Buy
+              </Link>
+            </div>
+            <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 text-[10px] text-gray-400 bg-white/5 border border-white/10 rounded-full px-3 py-1">
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" fill="#3395ff"/><path d="M8 10v4m4-4v4m4-4v4" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/></svg>
+                Razorpay
+              </span>
+              <span className="inline-flex items-center gap-1 text-[10px] text-gray-400 bg-white/5 border border-white/10 rounded-full px-3 py-1">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z" fill="#00b9f5"/><path d="M3 13l9 5 9-5" stroke="#10847e" strokeWidth="1.6"/></svg>
+                UPI
+              </span>
+              <span className="text-[10px] text-gray-400">Delivered in 48h · Razorpay/UPI</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Userscript */}
       <section className="section-padding border-t border-white/5">
         <div className="max-w-3xl mx-auto container-padding text-center">

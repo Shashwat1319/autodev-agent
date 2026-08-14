@@ -1,5 +1,5 @@
 import { PROOF } from '../lib/proof';
-import { PRO_PRICE_INR, PRO_PRICE_STRIKE_INR } from '../lib/pro';
+import { MAKEOVER_PRICE_INR, MAKEOVER_PRICE_STRIKE_INR } from '../lib/pro';
 
 export interface ProItem {
   rec: string;
@@ -31,17 +31,17 @@ export default function ProLocked({ username, items, proEmail, setProEmail, onUn
         <p className="text-xs text-amber-400 mb-4 animate-pulse" role="status">Verifying your payment…</p>
       )}
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-lg flex-shrink-0">🔒</div>
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-lg flex-shrink-0">🎯</div>
         <div>
-          <h2 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Pro Insights</h2>
-          <p className="text-xs text-gray-500">Level up your GitHub profile — right here</p>
+          <h2 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Profile Makeover</h2>
+          <p className="text-xs text-gray-500">Recruiters check GitHub — make yours recruiter-ready in 48 hours</p>
         </div>
       </div>
 
       {teaser.length > 0 && (
         <div className="mb-6">
           <p className="text-xs text-gray-400 mb-3">
-            Personalized for <span className="text-white font-medium">{username}</span> — here&apos;s a preview of your roadmap:
+            Personalized for <span className="text-white font-medium">{username}</span> — here&apos;s a preview of your fix plan:
           </p>
           <div className="space-y-3 relative">
             {teaser.map((item) => (
@@ -61,8 +61,8 @@ export default function ProLocked({ username, items, proEmail, setProEmail, onUn
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div className="absolute inset-0 rounded-xl" style={{ backdropFilter: 'blur(6px)' }} />
               <div className="relative flex flex-col items-center gap-2 px-4">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-base">🔒</div>
-                <p className="text-xs text-white font-medium">Unlock the full roadmap — all {items.length + 3} personalized recommendations</p>
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-base">🎯</div>
+                <p className="text-xs text-white font-medium">Unlock the full fix plan — all {items.length + 3} personalized steps</p>
                 <p className="text-[10px] text-gray-500">Repo deep dives · Score breakdown · Ranked by impact</p>
               </div>
             </div>
@@ -72,9 +72,9 @@ export default function ProLocked({ username, items, proEmail, setProEmail, onUn
 
       <div className="grid sm:grid-cols-3 gap-3 mb-6">
         {[
-          ['🎯', 'Prioritized Roadmap', 'Every recommendation ranked by impact, estimated score gain, and effort'],
-          ['🧠', 'Repo Deep Dive', 'Strengths & weaknesses of each of your top repositories'],
-          ['📈', 'Score Breakdown', 'Consistency, volume, and language analysis in one view'],
+          ['📝', 'Recruiter-Ready README', 'Auto-generated profile README — copy, paste, done'],
+          ['🎯', 'Prioritized Fix Plan', 'Every step ranked by impact, score gain, and effort'],
+          ['🏆', 'Score Badge', 'Show your score on GitHub — proof, not promises'],
         ].map(([icon, title, desc]) => (
           <div key={title} className="glass rounded-xl p-4">
             <div className="text-lg mb-1.5">{icon}</div>
@@ -99,19 +99,19 @@ export default function ProLocked({ username, items, proEmail, setProEmail, onUn
       <div className="text-center max-w-sm mx-auto">
         <input
           type="email"
-          placeholder="Email for receipt (optional)"
-          aria-label="Email for receipt"
+          placeholder="Email for delivery (receipt + makeover kit)"
+          aria-label="Email for delivery"
           value={proEmail}
           onChange={e => setProEmail(e.target.value)}
           className="w-full glass rounded-xl px-4 py-3 text-sm text-white outline-none mb-1.5 placeholder:text-gray-500"
         />
-        <p className="text-[10px] text-gray-500 text-left mb-3">Your payment receipt lands in this inbox — free recheck reminders included.</p>
+        <p className="text-[10px] text-gray-500 text-left mb-3">Your receipt, makeover kit, and free recheck reminders land in this inbox.</p>
         <button
           id="pro-pay-btn"
           onClick={onUnlock}
           className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold px-8 py-3.5 rounded-xl transition text-sm"
         >
-          Unlock Pro Insights — {PRO_PRICE_INR} <span className="line-through opacity-60 font-medium">{PRO_PRICE_STRIKE_INR}</span>
+          Get My Makeover — {MAKEOVER_PRICE_INR} <span className="line-through opacity-60 font-medium">{MAKEOVER_PRICE_STRIKE_INR}</span>
         </button>
         <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
           <span className="inline-flex items-center gap-1.5 text-[10px] text-gray-400 bg-white/5 border border-white/10 rounded-full px-3 py-1">
@@ -122,9 +122,9 @@ export default function ProLocked({ username, items, proEmail, setProEmail, onUn
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z" fill="#00b9f5"/><path d="M3 13l9 5 9-5" stroke="#10847e" strokeWidth="1.6"/></svg>
             UPI
           </span>
-          <span className="text-[10px] text-gray-400">Pay once · Lifetime access · No subscription</span>
+          <span className="text-[10px] text-gray-400">Pay once · Delivered in 48h · No subscription</span>
         </div>
-        <p className="text-[10px] text-gray-500 mt-2">Secure payment · Instant access · Refund on request ·{" "}
+        <p className="text-[10px] text-gray-500 mt-2">Secure payment · Instant access · Money-back guarantee ·{" "}
           <a href={PROOF.supportUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 transition">Need help?</a>
         </p>
         <p className="text-[10px] text-gray-500 mt-3">

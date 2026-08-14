@@ -1,5 +1,5 @@
 import { BASE_URL } from '../lib/config';
-import { PRO_PRICE_INR, PRO_PRICE_STRIKE_INR } from '../lib/pro';
+import { MAKEOVER_PRICE_INR, MAKEOVER_PRICE_STRIKE_INR } from '../lib/pro';
 import { copyText } from '../lib/clipboard';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
@@ -112,11 +112,11 @@ export default function ShareModal({ profile, onClose, continueHref }: { profile
             className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-3.5 rounded-xl transition text-sm disabled:opacity-50"
           >
             {proBusy ? 'Opening payment...' : (<>
-              Get Pro Insights — {PRO_PRICE_INR} <span className="line-through opacity-60 font-medium">{PRO_PRICE_STRIKE_INR}</span>
+              Get My Makeover — {MAKEOVER_PRICE_INR} <span className="line-through opacity-60 font-medium">{MAKEOVER_PRICE_STRIKE_INR}</span>
             </>)}
           </button>
           {proError && <p className="text-red-400 text-[11px] mt-2" role="alert">{proError}</p>}
-          <p className="text-[10px] text-gray-500 mt-1.5">Launch offer · Prioritized roadmap + repository deep dive, unlocked in your dashboard</p>
+          <p className="text-[10px] text-gray-500 mt-1.5">Launch offer · Recruiter-ready README + prioritized fix plan + score badge, unlocked in your dashboard</p>
         </div>
 
         {continueHref && (
