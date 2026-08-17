@@ -5,6 +5,7 @@ import { calculateScore } from '../../lib/analyze-profile';
 import { fetchGitHubJSON, fetchUserAndRepos } from '../../shared/github-client';
 import { getLangColor, getScoreShieldsColor } from '../../lib/format';
 import { BASE_URL } from '../../lib/config';
+import { isUserPro } from '../../lib/pro-server';
 
 function generateReadme(data: {
   username: string; avatar: string; name: string; bio: string;
@@ -275,6 +276,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   const validated = validateUsername(username);
   if (!validated) return res.status(400).json({ error: 'That doesn\u2019t look like a GitHub username \u2014 letters, numbers, dashes and underscores only, no spaces.' });
+
+  const requestedStyle = String(style || 'professional');
+  const isProStyle = requestedStyle === 'recruiter';
+  if (isProStyle) {
+    const cookies = req.headers.cookie || '';
+    const hasProCookie = cookies.split('; ').some(c => c.startsWith('autodev_pro=1'));
+    const isPro = hasProCookie || await isUserPro(validated);
+    if (!isPro) return res.status(403).json({ error: 'Pro required for recruiter style' });
+  }
 
   try {
     const { user, repoList, totalStars, totalForks } = await fetchUserAndRepos(validated);

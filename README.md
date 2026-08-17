@@ -18,6 +18,7 @@
   <a href="https://www.npmjs.com/package/autodev-agent"><img src="https://img.shields.io/npm/v/autodev-agent?style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/autodev-agent"><img src="https://img.shields.io/npm/dm/autodev-agent?style=flat-square&color=blue" /></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square" /></a>
+  <a href="./COMMERCIAL_LICENSE.md"><img src="https://img.shields.io/badge/Pro%20Features-Proprietary-orange?style=flat-square" /></a>
   <a href="./.github/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Shashwat1319/autodev-agent/ci.yml?branch=master&style=flat-square&label=CI" /></a>
   <a href="https://github.com/Shashwat1319/autodev-agent"><img src="https://img.shields.io/github/stars/Shashwat1319/autodev-agent?style=flat-square" /></a>
   <a href="https://github.com/Shashwat1319/autodev-agent/issues"><img src="https://img.shields.io/github/issues/Shashwat1319/autodev-agent?style=flat-square" /></a>
@@ -42,6 +43,24 @@
 | 🤖 **Auto-Git Agent** | Watches files, auto-commits with smart debouncing, pushes to GitHub | `npx autodev-agent` |
 
 No login. No signup. No database. 100% free. All data comes from the GitHub API.
+
+---
+
+## 🆓 Free vs 💎 Pro
+
+| Feature | Free | Pro (₹499) |
+|---------|------|------------|
+| Profile Score & Analysis | ✅ | ✅ |
+| Language Breakdown | ✅ | ✅ |
+| Top Repos & Stats | ✅ | ✅ |
+| Classic Badge | ✅ | ✅ |
+| Recruiter-Ready README | ❌ | ✅ |
+| Gold/Dark Badges | ❌ | ✅ |
+| Prioritized Fix Plan | ❌ | ✅ |
+| Repo Deep Dive (weaknesses/strengths) | ❌ | ✅ |
+| Signed Badge URLs (90 days) | ❌ | ✅ |
+
+[Upgrade to Pro →](https://autodev-kappa.vercel.app/dashboard) *(one-time ₹499, 48h delivery, money-back guarantee)*
 
 ---
 

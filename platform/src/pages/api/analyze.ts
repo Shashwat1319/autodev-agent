@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import * as Sentry from '@sentry/nextjs';
 import { rateLimit, validateUsername } from '../../lib/api-utils';
 import { analyzeProfile } from '../../lib/analyze-profile';
+import { incrementCounter } from '../../lib/counter';
 
 export default async function handler(
   req: NextApiRequest,
@@ -30,8 +31,14 @@ export default async function handler(
     const analysis = await analyzeProfile(validated);
     if (!analysis) return res.status(404).json({ error: 'User not found' });
 
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
+    const countryHeader = req.headers['x-vercel-ip-country'];
+    const country = typeof countryHeader === 'string' ? countryHeader.toUpperCase() : '';
+    res.setHeader('Cache-Control', 'no-store, max-age=0');
     res.status(200).json(analysis);
+    await Promise.race([
+      incrementCounter(country).catch(() => {}),
+      new Promise(r => setTimeout(r, 3000)),
+    ]);
   } catch (err: any) {
     Sentry.captureException(err);
     res.status(500).json({ error: err.message || 'Failed to analyze profile' });

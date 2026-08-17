@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { track } from '@vercel/analytics';
 import { getLangColor, getScoreLabel } from '../lib/format';
 import { BASE_URL } from '../lib/config';
-import { isProUnlocked, unlockPro, MAKEOVER_PRICE_INR } from '../lib/pro';
+import { MAKEOVER_PRICE_INR } from '../lib/pro';
 import { isValidUsernameFormat, USERNAME_FORMAT_ERROR } from '../lib/username';
 import { copyText } from '../lib/clipboard';
 import Layout from '../components/Layout';
@@ -170,7 +170,7 @@ export default function Dashboard() {
       const str = (v: unknown) => (typeof v === 'string' ? v : Array.isArray(v) ? v[0] ?? '' : '');
       const paymentLinkId = str(q.razorpay_payment_link_id);
       const finish = (unlocked: boolean, msg?: string) => {
-        if (unlocked) { unlockPro(); setProUnlocked(true); track('pro_unlocked'); }
+        if (unlocked) { setProUnlocked(true); track('pro_unlocked'); }
         if (msg) setError(msg);
         const rest: Record<string, string> = {};
         for (const [k, v] of Object.entries(q)) if (!['pro_unlocked', 'link', 'razorpay_payment_link_id', 'razorpay_payment_link_reference_id', 'razorpay_payment_link_status', 'razorpay_payment_id', 'razorpay_signature'].includes(k)) rest[k] = String(v);
@@ -193,10 +193,18 @@ export default function Dashboard() {
       } else {
         finish(false, 'Payment not detected \u2014 Pro stays locked. If you paid, reply to your email receipt for help.');
       }
-    } else if (isProUnlocked()) {
-      setProUnlocked(true);
     }
   }, [router.query]);
+
+  // Check Pro status on profile load
+  useEffect(() => {
+    if (profile?.username) {
+      fetch(`/api/pro/check?username=${encodeURIComponent(profile.username)}`)
+        .then(r => r.json())
+        .then((d: any) => { if (d?.isPro) setProUnlocked(true); })
+        .catch(() => {});
+    }
+  }, [profile?.username]);
 
   useEffect(() => {
     if (!proUnlocked || !profile?.username || badgeStyle === 'classic') { setProBadgeSrc(''); return; }

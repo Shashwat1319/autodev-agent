@@ -4,6 +4,7 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { rateLimit, validateUsername } from '../../lib/api-utils';
 import { analyzeProfile } from '../../lib/analyze-profile';
 import { getScoreHex, getScoreLabel } from '../../lib/format';
+import { isUserPro } from '../../lib/pro-server';
 
 const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
 
@@ -64,20 +65,26 @@ export default async function handler(
   const requestedStyle = String(style);
   const isProRequest = requestedStyle === 'gold' || requestedStyle === 'dark';
   const cookies = req.headers.cookie || '';
-  const hasPro = cookies.split('; ').some(c => c.startsWith('autodev_pro=1'));
+  const hasProCookie = cookies.split('; ').some(c => c.startsWith('autodev_pro=1'));
   const validated = validateUsername(username);
-  const isSignedPro = isProRequest && validated ? (() => {
+  
+  let isSignedPro = false;
+  if (isProRequest && validated && exp && sig) {
     const expiry = Number(exp);
     const signature = String(sig || '');
     const now = Date.now() / 1000;
-    if (!KEY_SECRET || !expiry || !signature || expiry < now || expiry - now > 90 * 86400) return false;
-    const msg = `${validated}:${requestedStyle}:${expiry}`;
-    const expected = createHmac('sha256', KEY_SECRET).update(msg).digest('hex');
-    const a = Buffer.from(expected);
-    const b = Buffer.from(signature);
-    return a.length === b.length && timingSafeEqual(a, b);
-  })() : false;
-  const isProServed = isProRequest && (hasPro || isSignedPro);
+    if (!KEY_SECRET || !expiry || !signature || expiry < now || expiry - now > 90 * 86400) {
+      isSignedPro = false;
+    } else {
+      const msg = `${validated}:${requestedStyle}:${expiry}`;
+      const expected = createHmac('sha256', KEY_SECRET).update(msg).digest('hex');
+      const a = Buffer.from(expected);
+      const b = Buffer.from(signature);
+      isSignedPro = a.length === b.length && timingSafeEqual(a, b);
+    }
+  }
+
+  const isProServed = isProRequest && (hasProCookie || isSignedPro || (validated && await isUserPro(validated)));
   const badgeStyle = ['classic', 'gold', 'dark'].includes(requestedStyle) && (isProServed || !isProRequest) ? requestedStyle : 'classic';
   if (!validated) return res.status(200).setHeader('Content-Type', 'image/svg+xml').send(badgeSVG('Invalid User', 0, '#f44336', badgeStyle));
 

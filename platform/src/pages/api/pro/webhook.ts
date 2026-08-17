@@ -2,8 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import * as Sentry from '@sentry/nextjs';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { rateLimit } from '../../../lib/api-utils';
-
-const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
+import { addPaidUser, verifyPaymentSignature } from '../../../lib/pro-server';
 
 export const config = {
   api: {
@@ -30,7 +29,7 @@ export default async function handler(
   const rl = rateLimit({ key: `webhook:${ip}`, maxRequests: 120, windowMs: 60000 });
   if (!rl.allowed) return res.status(429).json({ error: 'Too many requests.' });
 
-  if (!KEY_SECRET) {
+  if (!process.env.RAZORPAY_KEY_SECRET) {
     Sentry.captureMessage('Razorpay webhook received but RAZORPAY_KEY_SECRET is not set');
     return res.status(500).json({ error: 'Webhook not configured' });
   }
@@ -43,10 +42,7 @@ export default async function handler(
     return res.status(400).json({ error: 'Invalid body' });
   }
 
-  const expected = createHmac('sha256', KEY_SECRET).update(body).digest('hex');
-  const a = Buffer.from(expected);
-  const b = Buffer.from(String(signature || ''));
-  if (a.length !== b.length || !timingSafeEqual(a, b)) {
+  if (!verifyPaymentSignature(body, String(signature || ''))) {
     Sentry.captureMessage('Razorpay webhook signature mismatch');
     return res.status(400).json({ error: 'Invalid signature' });
   }
@@ -56,14 +52,34 @@ export default async function handler(
     const entity = event?.payload?.payment_link?.entity || {};
 
     if (event.event === 'payment_link.paid') {
-      Sentry.captureMessage('AutoDev Pro payment received', {
+      const username = entity.notes?.username || '';
+      const email = entity.customer?.email;
+
+      const saved = await addPaidUser({
+        username,
+        paymentLinkId: entity.id,
+        paymentId: entity.id,
+        email,
+        amount: entity.amount,
+        currency: entity.currency,
+        paidAt: Date.now(),
+        verified: true,
+      });
+
+      if (!saved) {
+        Sentry.captureMessage('Failed to save paid user from webhook', {
+          extra: { paymentLinkId: entity.id, username },
+        });
+      }
+
+      Sentry.captureMessage('AutoDev Pro payment received via webhook', {
         extra: {
           paymentLinkId: entity.id,
           amount: entity.amount,
           currency: entity.currency,
           status: entity.status,
-          username: entity.notes?.username,
-          email: entity.customer?.email,
+          username,
+          email,
         },
         tags: { event: 'pro_payment' },
       });

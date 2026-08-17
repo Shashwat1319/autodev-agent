@@ -18,18 +18,24 @@ export default async function handler(
   if (!rl.allowed) return res.status(429).json({ error: 'Too many requests. Try again in a minute.' });
 
   if (!KEY_ID || !KEY_SECRET) {
-    return res.status(200).json({ demo: true });
+    return res.status(503).json({ error: 'Payment not configured' });
   }
 
   const username = validateUsername(req.body?.username) || '';
   const rawEmail = typeof req.body?.email === 'string' ? req.body.email.trim() : '';
   const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail) ? rawEmail : '';
 
+  if (!username) {
+    return res.status(400).json({ error: 'Valid GitHub username required' });
+  }
+
+  const referenceId = `ad-${username}-${Date.now().toString(36)}`;
+
   const payload: Record<string, unknown> = {
     amount: AMOUNT,
     currency: 'INR',
     description: 'AutoDev GitHub Profile Makeover — README + roadmap + badge',
-    reference_id: `ad-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+    reference_id: referenceId,
     callback_url: `${BASE_URL}/dashboard?user=${encodeURIComponent(username)}&pro_unlocked=1`,
     callback_method: 'get',
     notify: { email: true },
@@ -53,7 +59,7 @@ export default async function handler(
       return res.status(502).json({ error: 'Payment setup failed. Please try again in a minute.' });
     }
     const data = await r.json();
-    return res.status(200).json({ url: data.short_url });
+    return res.status(200).json({ url: data.short_url, referenceId });
   } catch (err) {
     Sentry.captureException(err);
     return res.status(502).json({ error: 'Payment setup failed. Please try again in a minute.' });

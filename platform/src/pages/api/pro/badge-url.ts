@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/nextjs';
 import { createHmac } from 'crypto';
 import { rateLimit, validateUsername } from '../../../lib/api-utils';
 import { BASE_URL } from '../../../lib/config';
+import { isUserPro } from '../../../lib/pro-server';
 
 const KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
 const EXPIRY_SECONDS = 90 * 86400;
@@ -18,8 +19,7 @@ export default async function handler(
   if (!rl.allowed) return res.status(429).json({ error: 'Too many requests. Try again in a minute.' });
 
   const cookies = req.headers.cookie || '';
-  const hasPro = cookies.split('; ').some(c => c.startsWith('autodev_pro=1'));
-  if (!hasPro) return res.status(403).json({ error: 'Pro required' });
+  const hasProCookie = cookies.split('; ').some(c => c.startsWith('autodev_pro=1'));
 
   const { username, style } = req.query;
   const requestedStyle = String(style || 'gold');
@@ -28,6 +28,10 @@ export default async function handler(
   }
   const validated = validateUsername(username);
   if (!validated) return res.status(400).json({ error: 'Invalid username' });
+
+  const isPro = hasProCookie || await isUserPro(validated);
+  if (!isPro) return res.status(403).json({ error: 'Pro required' });
+
   if (!KEY_SECRET) {
     Sentry.captureMessage('badge-url: RAZORPAY_KEY_SECRET not set');
     return res.status(500).json({ error: 'Signing unavailable' });

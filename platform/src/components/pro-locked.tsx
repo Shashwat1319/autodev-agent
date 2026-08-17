@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { PROOF } from '../lib/proof';
 import { MAKEOVER_PRICE_INR, MAKEOVER_PRICE_STRIKE_INR } from '../lib/pro';
 
@@ -6,6 +7,27 @@ export interface ProItem {
   impact: string;
   gain: string;
   effort: string;
+}
+
+interface LiveStats {
+  analyses: number;
+  countryCount: number;
+}
+
+function LiveStats() {
+  const [stats, setStats] = useState<LiveStats | null>(null);
+  useEffect(() => {
+    fetch('/api/stats')
+      .then(r => r.json())
+      .then(d => setStats(d))
+      .catch(() => {});
+  }, []);
+  if (!stats) return null;
+  return (
+    <p className="text-[10px] text-gray-500 text-center mb-4">
+      📊 {stats.analyses.toLocaleString('en-IN')}+ profiles analyzed · {stats.countryCount}+ countries — live
+    </p>
+  );
 }
 
 interface ProLockedProps {
@@ -84,19 +106,8 @@ export default function ProLocked({ username, items, proEmail, setProEmail, onUn
         ))}
       </div>
 
-      {PROOF.testimonials.length > 0 && (
-        <div className="grid sm:grid-cols-2 gap-3 mb-6">
-          {PROOF.testimonials.map((t) => (
-            <div key={t.name} className="glass rounded-xl p-4">
-              <div className="text-amber-400 text-xs mb-2">★★★★★</div>
-              <p className="text-xs text-gray-300 leading-relaxed mb-3">&ldquo;{t.quote}&rdquo;</p>
-              <p className="text-[11px] text-white font-medium">{t.name} <span className="text-gray-500 font-normal">· {t.role}</span></p>
-            </div>
-          ))}
-        </div>
-      )}
-
       <div className="text-center max-w-sm mx-auto">
+        <LiveStats />
         <input
           type="email"
           placeholder="Email for delivery (receipt + makeover kit)"
@@ -129,7 +140,6 @@ export default function ProLocked({ username, items, proEmail, setProEmail, onUn
         </p>
         <p className="text-[10px] text-gray-500 mt-3">
           <a href={PROOF.phUrl} target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 transition font-medium">🚀 Featured on Product Hunt</a>
-          {" · "}Used by {PROOF.usersCount} developers in {PROOF.countriesCount}+ countries
         </p>
       </div>
     </div>
